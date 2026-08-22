@@ -13,9 +13,13 @@ Assignment requirements:
 - Source code access + online demo (or README with run instructions)
 
 Beyond the assignment, the app adds an advanced filter panel modeled after
-Raynet's own ("Kritéria klientů" subset: state, role, rating, category, city,
-reg. number — all living in URL search params). Saved filters and smart
-filters are intentionally out of scope.
+Raynet's own — every "Kritéria klientů" criterion the company list API can
+filter server-side: name, natural person, state, role, rating, owner,
+economy activity, turnover, legal form, payment terms, city, e-mail,
+reg. number, tax number, category, classifications 1–3 and tags. All filters
+live in URL search params; codelist and user options load lazily and cache
+for the session. Saved filters and smart filters are intentionally out of
+scope (the list API cannot express them).
 
 ## Decisions
 

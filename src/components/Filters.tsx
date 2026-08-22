@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { getRouteApi, useNavigate } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
-  companyCategoriesQueryOptions,
+  codelistQueryOptions,
   COMPANY_RATINGS,
   COMPANY_ROLES,
   COMPANY_STATES,
+  usersQueryOptions,
+  type CodelistEntity,
 } from '../api/companies'
 import { ROLE_LABELS, STATE_LABELS } from '../labels'
 import ui from '../styles/ui.module.scss'
@@ -13,28 +15,101 @@ import styles from './Filters.module.scss'
 
 const route = getRouteApi('/clients')
 
+// Filter criteria supported by the app — the subset of Raynet's
+// "Kritéria klientů" that the company list API can filter server-side.
+// Saved filters and smart filters are out of scope.
 const FILTER_KEYS = [
+  'name',
+  'person',
   'state',
   'role',
   'rating',
-  'category',
+  'owner',
+  'economyActivity',
+  'turnover',
+  'legalForm',
+  'paymentTerm',
   'city',
+  'email',
   'regNumber',
+  'taxNumber',
+  'category',
+  'classification1',
+  'classification2',
+  'classification3',
+  'tags',
 ] as const
 
 type FilterKey = (typeof FILTER_KEYS)[number]
 
 const FILTER_LABELS: Record<FilterKey, string> = {
+  name: 'Název',
+  person: 'Fyzická osoba',
   state: 'Stav',
   role: 'Vztah',
   rating: 'Rating',
-  category: 'Kategorie',
+  owner: 'Vlastník',
+  economyActivity: 'Obor',
+  turnover: 'Obrat',
+  legalForm: 'Právní forma',
+  paymentTerm: 'Platební podmínky',
   city: 'Město',
+  email: 'E-mail',
   regNumber: 'IČO',
+  taxNumber: 'DIČ',
+  category: 'Kategorie',
+  classification1: 'Klasifikace 1',
+  classification2: 'Klasifikace 2',
+  classification3: 'Klasifikace 3',
+  tags: 'Štítky',
 }
 
-type FilterValue = string | number | undefined
+// Grouping of the "+ Přidat podmínku" combobox, mirroring Raynet's sections
+const FILTER_GROUPS: [label: string, keys: FilterKey[]][] = [
+  ['Základní kritéria', ['name', 'person', 'state', 'role', 'rating', 'owner']],
+  [
+    'Ekonomická kritéria',
+    ['economyActivity', 'turnover', 'legalForm', 'paymentTerm'],
+  ],
+  ['Adresy a kontakty', ['city', 'email']],
+  ['Identifikátory', ['regNumber', 'taxNumber']],
+  [
+    'Zařazení',
+    [
+      'category',
+      'classification1',
+      'classification2',
+      'classification3',
+      'tags',
+    ],
+  ],
+]
 
+// criteria whose value is an id from a Raynet codelist
+const CODELIST_BY_KEY: Partial<Record<FilterKey, CodelistEntity>> = {
+  category: 'companyCategory',
+  economyActivity: 'economyActivity',
+  turnover: 'companyTurnover',
+  legalForm: 'legalForm',
+  paymentTerm: 'paymentTerm',
+  classification1: 'companyClassification1',
+  classification2: 'companyClassification2',
+  classification3: 'companyClassification3',
+}
+
+// criteria with a free-text value (matched as "contains" unless noted)
+const TEXT_PLACEHOLDERS: Partial<Record<FilterKey, string>> = {
+  name: 'Obsahuje…',
+  city: 'Obsahuje…',
+  email: 'Obsahuje…',
+  regNumber: 'Přesná shoda',
+  taxNumber: 'Přesná shoda',
+  tags: 'Více štítků oddělte čárkou',
+}
+
+type FilterValue = string | number | boolean | undefined
+
+// Clears all filter params from the URL (keeps fulltext and selection)
 function useClearFilters() {
   const navigate = useNavigate()
   return () =>
@@ -53,13 +128,13 @@ export function Filters() {
   const navigate = useNavigate()
   const clearFilters = useClearFilters()
   const [open, setOpen] = useState(false)
+  // criteria added in the panel that don't have a value (yet)
   const [draftKeys, setDraftKeys] = useState<FilterKey[]>([])
 
   const activeKeys = FILTER_KEYS.filter((key) => search[key] !== undefined)
   const visibleKeys = FILTER_KEYS.filter(
     (key) => activeKeys.includes(key) || draftKeys.includes(key),
   )
-  const addableKeys = FILTER_KEYS.filter((key) => !visibleKeys.includes(key))
 
   const setFilter = (key: FilterKey, value: FilterValue) => {
     navigate({
@@ -133,23 +208,29 @@ export function Filters() {
               </div>
             ))}
 
-            {addableKeys.length > 0 && (
-              <select
-                className={styles.addSelect}
-                value=""
-                onChange={(event) => {
-                  const key = event.target.value as FilterKey
-                  if (key) setDraftKeys((keys) => [...keys, key])
-                }}
-              >
-                <option value="">+ Přidat podmínku</option>
-                {addableKeys.map((key) => (
-                  <option key={key} value={key}>
-                    {FILTER_LABELS[key]}
-                  </option>
-                ))}
-              </select>
-            )}
+            <select
+              className={styles.addSelect}
+              value=""
+              onChange={(event) => {
+                const key = event.target.value as FilterKey
+                if (key) setDraftKeys((keys) => [...keys, key])
+              }}
+            >
+              <option value="">+ Přidat podmínku</option>
+              {FILTER_GROUPS.map(([label, keys]) => {
+                const addable = keys.filter((key) => !visibleKeys.includes(key))
+                if (addable.length === 0) return null
+                return (
+                  <optgroup key={label} label={label}>
+                    {addable.map((key) => (
+                      <option key={key} value={key}>
+                        {FILTER_LABELS[key]}
+                      </option>
+                    ))}
+                  </optgroup>
+                )
+              })}
+            </select>
           </div>
 
           <footer className={styles.panelFooter}>
@@ -168,31 +249,15 @@ export function Filters() {
   )
 }
 
+// "Filtrováno" indicator + removable chips with the currently applied
+// criteria + "Vyčistit filtry", shown above the table (as in Raynet)
 export function ActiveFilters() {
   const search = route.useSearch()
   const navigate = useNavigate()
   const clearFilters = useClearFilters()
-  const { data: categories } = useSuspenseQuery(companyCategoriesQueryOptions())
 
   const activeKeys = FILTER_KEYS.filter((key) => search[key] !== undefined)
   if (activeKeys.length === 0) return null
-
-  const valueLabel = (key: FilterKey): string => {
-    const value = search[key]
-    switch (key) {
-      case 'state':
-        return STATE_LABELS[value as keyof typeof STATE_LABELS]
-      case 'role':
-        return ROLE_LABELS[value as keyof typeof ROLE_LABELS]
-      case 'category':
-        return (
-          categories.data.find((item) => item.id === value)?.code01 ??
-          String(value)
-        )
-      default:
-        return String(value)
-    }
-  }
 
   return (
     <div className={styles.active}>
@@ -214,7 +279,10 @@ export function ActiveFilters() {
           }
           title="Odebrat filtr"
         >
-          {FILTER_LABELS[key]}: <strong>{valueLabel(key)}</strong>
+          {FILTER_LABELS[key]}:{' '}
+          <strong>
+            <FilterValueLabel filterKey={key} value={search[key]} />
+          </strong>
           <span aria-hidden="true"> ✕</span>
         </button>
       ))}
@@ -229,6 +297,49 @@ export function ActiveFilters() {
   )
 }
 
+// Human-readable value of an applied criterion (resolves codelist ids and
+// user ids to names; falls back to the raw value while lists load)
+function FilterValueLabel({
+  filterKey,
+  value,
+}: {
+  filterKey: FilterKey
+  value: FilterValue
+}) {
+  const codelistEntity = CODELIST_BY_KEY[filterKey]
+  const codelist = useQuery({
+    ...codelistQueryOptions(codelistEntity ?? 'companyCategory'),
+    enabled: codelistEntity !== undefined,
+  })
+  const users = useQuery({
+    ...usersQueryOptions(),
+    enabled: filterKey === 'owner',
+  })
+
+  if (codelistEntity) {
+    return (
+      codelist.data?.data.find((item) => item.id === value)?.code01 ??
+      String(value)
+    )
+  }
+
+  switch (filterKey) {
+    case 'person':
+      return value ? 'Ano' : 'Ne'
+    case 'state':
+      return STATE_LABELS[value as keyof typeof STATE_LABELS]
+    case 'role':
+      return ROLE_LABELS[value as keyof typeof ROLE_LABELS]
+    case 'owner':
+      return (
+        users.data?.data.find((user) => user.person?.id === value)?.person
+          ?.fullName ?? String(value)
+      )
+    default:
+      return String(value)
+  }
+}
+
 function FilterControl({
   filterKey,
   value,
@@ -238,7 +349,16 @@ function FilterControl({
   value: FilterValue
   onChange: (value: FilterValue) => void
 }) {
-  const { data: categories } = useSuspenseQuery(companyCategoriesQueryOptions())
+  const codelistEntity = CODELIST_BY_KEY[filterKey]
+  if (codelistEntity) {
+    return (
+      <CodelistSelect
+        entity={codelistEntity}
+        value={value as number | undefined}
+        onChange={onChange}
+      />
+    )
+  }
 
   switch (filterKey) {
     case 'state':
@@ -265,34 +385,83 @@ function FilterControl({
           onChange={onChange}
         />
       )
-    case 'category':
+    case 'person':
       return (
         <EnumSelect
-          value={value !== undefined ? String(value) : undefined}
-          options={categories.data.map((item) => [
-            String(item.id),
-            item.code01,
-          ])}
-          onChange={(next) => onChange(next ? Number(next) : undefined)}
+          value={value === undefined ? undefined : String(value)}
+          options={[
+            ['true', 'Ano'],
+            ['false', 'Ne'],
+          ]}
+          onChange={(next) =>
+            onChange(next === undefined ? undefined : next === 'true')
+          }
         />
       )
-    case 'city':
+    case 'owner':
+      return (
+        <OwnerSelect value={value as number | undefined} onChange={onChange} />
+      )
+    default:
       return (
         <TextFilterInput
           value={value as string | undefined}
-          placeholder="Obsahuje…"
-          onCommit={onChange}
-        />
-      )
-    case 'regNumber':
-      return (
-        <TextFilterInput
-          value={value as string | undefined}
-          placeholder="Přesná shoda"
+          placeholder={TEXT_PLACEHOLDERS[filterKey] ?? ''}
           onCommit={onChange}
         />
       )
   }
+}
+
+function CodelistSelect({
+  entity,
+  value,
+  onChange,
+}: {
+  entity: CodelistEntity
+  value: number | undefined
+  onChange: (value: number | undefined) => void
+}) {
+  const { data, isPending } = useQuery(codelistQueryOptions(entity))
+
+  if (isPending) return <LoadingSelect />
+  return (
+    <EnumSelect
+      value={value !== undefined ? String(value) : undefined}
+      options={(data?.data ?? []).map((item) => [String(item.id), item.code01])}
+      onChange={(next) => onChange(next ? Number(next) : undefined)}
+    />
+  )
+}
+
+function OwnerSelect({
+  value,
+  onChange,
+}: {
+  value: number | undefined
+  onChange: (value: number | undefined) => void
+}) {
+  const { data, isPending } = useQuery(usersQueryOptions())
+
+  if (isPending) return <LoadingSelect />
+  const persons = (data?.data ?? []).flatMap((user) =>
+    user.person ? [user.person] : [],
+  )
+  return (
+    <EnumSelect
+      value={value !== undefined ? String(value) : undefined}
+      options={persons.map((person) => [String(person.id), person.fullName])}
+      onChange={(next) => onChange(next ? Number(next) : undefined)}
+    />
+  )
+}
+
+function LoadingSelect() {
+  return (
+    <select className={styles.control} disabled>
+      <option>Načítám…</option>
+    </select>
+  )
 }
 
 function EnumSelect({

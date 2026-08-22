@@ -106,12 +106,29 @@ export interface CompanyDetail extends Company {
   logo?: FileRef | null
 }
 
-// Codelist entry (GET /companyCategory/) — code01 is the label,
-// code02 the category color as a hex value without '#'
-export interface CompanyCategoryItem {
+// Codelist entry (e.g. GET /companyCategory/) — code01 is the label,
+// code02 an optional color as a hex value without '#'
+export interface CodelistItem {
   id: number
   code01: string
   code02: string | null
+}
+
+// Codelists used by the client filters
+export type CodelistEntity =
+  | 'companyCategory'
+  | 'economyActivity'
+  | 'companyTurnover'
+  | 'legalForm'
+  | 'paymentTerm'
+  | 'companyClassification1'
+  | 'companyClassification2'
+  | 'companyClassification3'
+
+export interface UserAccount {
+  id: number
+  username: string
+  person: PersonRef | null
 }
 
 // GET /icon/{fileId}/ — imgData is a ready-to-use data: URI
@@ -138,17 +155,43 @@ export const DEFAULT_PAGE_SIZE = 50
 
 export interface CompanyListParams {
   fulltext?: string
+  name?: string
+  person?: boolean
   rating?: CompanyRating
   state?: CompanyState
   role?: CompanyRole
+  owner?: number
   category?: number
+  economyActivity?: number
+  turnover?: number
+  legalForm?: number
+  paymentTerm?: number
+  classification1?: number
+  classification2?: number
+  classification3?: number
   city?: string
+  email?: string
   regNumber?: string
+  taxNumber?: string
+  tags?: string
   offset?: number
   limit?: number
   sortColumn?: CompanySortColumn
   sortDirection?: SortDirection
 }
+
+// codelist-id filters that map 1:1 to a query param
+const ID_PARAMS = [
+  ['owner', 'owner'],
+  ['category', 'category'],
+  ['economyActivity', 'economyActivity'],
+  ['turnover', 'turnover'],
+  ['legalForm', 'legalForm'],
+  ['paymentTerm', 'paymentTerm'],
+  ['classification1', 'companyClassification1'],
+  ['classification2', 'companyClassification2'],
+  ['classification3', 'companyClassification3'],
+] as const satisfies readonly [keyof CompanyListParams, string][]
 
 export function buildCompanyListSearch(
   params: CompanyListParams,
@@ -156,14 +199,26 @@ export function buildCompanyListSearch(
   const search = new URLSearchParams()
   const fulltext = params.fulltext?.trim()
   if (fulltext) search.set('fulltext', fulltext)
+  // "contains, case-insensitive" — Raynet's LIKE uses % as the wildcard
+  if (params.name) search.set('name[LIKE_NOCASE]', `%${params.name}%`)
+  if (params.person !== undefined) search.set('person', String(params.person))
   if (params.rating) search.set('rating', params.rating)
   if (params.state) search.set('state', params.state)
   if (params.role) search.set('role', params.role)
-  if (params.category !== undefined)
-    search.set('category', String(params.category))
+  for (const [key, param] of ID_PARAMS) {
+    const value = params[key]
+    if (value !== undefined) search.set(param, String(value))
+  }
   if (params.city)
     search.set('primaryAddress-address.city[LIKE_NOCASE]', `%${params.city}%`)
+  if (params.email)
+    search.set(
+      'primaryAddress-contactInfo.email[LIKE_NOCASE]',
+      `%${params.email}%`,
+    )
   if (params.regNumber) search.set('regNumber', params.regNumber)
+  if (params.taxNumber) search.set('taxNumber', params.taxNumber)
+  if (params.tags) search.set('tags', params.tags)
   if (params.offset !== undefined) search.set('offset', String(params.offset))
   if (params.limit !== undefined) search.set('limit', String(params.limit))
   if (params.sortColumn) {
@@ -194,12 +249,21 @@ export const companyDetailQueryOptions = (companyId: number) =>
     },
   })
 
-// Categories change rarely — cache them for the whole session
-export const companyCategoriesQueryOptions = () =>
+// Codelists change rarely — cache them for the whole session
+export const codelistQueryOptions = (entity: CodelistEntity) =>
   queryOptions({
-    queryKey: ['companyCategories'],
-    queryFn: () =>
-      getJson<ListResponse<CompanyCategoryItem>>('companyCategory/'),
+    queryKey: ['codelist', entity],
+    queryFn: () => getJson<ListResponse<CodelistItem>>(`${entity}/`),
+    staleTime: Infinity,
+  })
+
+export const companyCategoriesQueryOptions = () =>
+  codelistQueryOptions('companyCategory')
+
+export const usersQueryOptions = () =>
+  queryOptions({
+    queryKey: ['users'],
+    queryFn: () => getJson<ListResponse<UserAccount>>('userAccount/'),
     staleTime: Infinity,
   })
 
