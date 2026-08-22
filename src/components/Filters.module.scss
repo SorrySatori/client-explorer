@@ -1,0 +1,192 @@
+.filters {
+  position: relative;
+}
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--color-brand);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  width: 320px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 70, 85, 0.18);
+  text-align: left;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--color-brand);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 3px 3px 0 0;
+}
+
+.close {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+}
+
+.section {
+  padding: 8px 12px;
+  background: var(--color-bg-muted);
+  color: var(--color-brand);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rows {
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  gap: 4px;
+}
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.remove {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.control {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-bg);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: -1px;
+  }
+}
+
+.addSelect {
+  composes: control;
+  color: var(--color-brand);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.panelFooter {
+  padding: 12px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.clear {
+  border: none;
+  border-radius: 999px;
+  padding: 7px 16px;
+  background: var(--color-bg-muted);
+  color: var(--color-text);
+  font: 600 13px/1.2 var(--font-sans);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--color-border);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+// applied criteria chips above the table
+.active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.activeChip {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg-muted);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 12px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-text-muted);
+  }
+}
+
+.filteredBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--color-filter-active);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+}
+
+.clearInline {
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-brand);
+  }
+}

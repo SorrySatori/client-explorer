@@ -40,7 +40,7 @@ export function SearchBox() {
       }
     }, SEARCH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [value])
+  }, [value, q, navigate])
 
   const tooShort =
     value.trim().length > 0 && value.trim().length < SEARCH_MIN_LENGTH

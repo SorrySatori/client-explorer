@@ -27,16 +27,18 @@ export async function getJson<T>(
   const response = await fetch(`/api/${path}${query}`)
 
   if (!response.ok) {
-    let message = `Request failed with status ${response.status}`
-    try {
-      const body = (await response.json()) as {
-        message?: string
-        translatedMessage?: string
-        error?: string
-      }
-      message = body.translatedMessage ?? body.message ?? body.error ?? message
-    } catch {
-    }
+    // Raynet errors carry { message, translatedMessage? }; the body may
+    // also be non-JSON (e.g. proxy errors), hence the fallback chain
+    const body = (await response.json().catch(() => null)) as {
+      message?: string
+      translatedMessage?: string
+      error?: string
+    } | null
+    const message =
+      body?.translatedMessage ??
+      body?.message ??
+      body?.error ??
+      `Request failed with status ${response.status}`
     throw new ApiError(response.status, message)
   }
 

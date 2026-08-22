@@ -14,6 +14,9 @@
   --color-state-deferred: var(--color-text);
   --color-state-unattractive: rgb(244, 117, 89);
 
+  // "Filtered" indicator chip
+  --color-filter-active: rgb(244, 117, 89);
+
   // Left navigation sidebar
   --sidebar-gradient: linear-gradient(
     180deg,

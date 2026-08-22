@@ -29,6 +29,19 @@ describe('buildCompanyListSearch', () => {
     })
   })
 
+  it('maps filter params including operator syntax for city', () => {
+    const search = buildCompanyListSearch({
+      category: 105,
+      city: 'Zlín',
+      regNumber: '123',
+    })
+    expect(Object.fromEntries(search)).toEqual({
+      category: '105',
+      'primaryAddress-address.city[LIKE_NOCASE]': '%Zlín%',
+      regNumber: '123',
+    })
+  })
+
   it('trims fulltext and drops it when blank', () => {
     expect(
       buildCompanyListSearch({ fulltext: '  raynet  ' }).get('fulltext'),

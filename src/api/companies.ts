@@ -1,13 +1,25 @@
 import { queryOptions } from '@tanstack/react-query'
 import { getJson, type DetailResponse, type ListResponse } from './http'
 
-export type CompanyRating = 'A' | 'B' | 'C'
+export const COMPANY_RATINGS = ['A', 'B', 'C'] as const
+export type CompanyRating = (typeof COMPANY_RATINGS)[number]
 
-export type CompanyState =
-  'A_POTENTIAL' | 'B_ACTUAL' | 'C_DEFERRED' | 'D_UNATTRACTIVE'
+export const COMPANY_STATES = [
+  'A_POTENTIAL',
+  'B_ACTUAL',
+  'C_DEFERRED',
+  'D_UNATTRACTIVE',
+] as const
+export type CompanyState = (typeof COMPANY_STATES)[number]
 
-export type CompanyRole =
-  'A_SUBSCRIBER' | 'B_PARTNER' | 'C_SUPPLIER' | 'D_RIVAL' | 'E_OWN'
+export const COMPANY_ROLES = [
+  'A_SUBSCRIBER',
+  'B_PARTNER',
+  'C_SUPPLIER',
+  'D_RIVAL',
+  'E_OWN',
+] as const
+export type CompanyRole = (typeof COMPANY_ROLES)[number]
 
 export interface EnumRef {
   id: number
@@ -129,6 +141,9 @@ export interface CompanyListParams {
   rating?: CompanyRating
   state?: CompanyState
   role?: CompanyRole
+  category?: number
+  city?: string
+  regNumber?: string
   offset?: number
   limit?: number
   sortColumn?: CompanySortColumn
@@ -144,6 +159,11 @@ export function buildCompanyListSearch(
   if (params.rating) search.set('rating', params.rating)
   if (params.state) search.set('state', params.state)
   if (params.role) search.set('role', params.role)
+  if (params.category !== undefined)
+    search.set('category', String(params.category))
+  if (params.city)
+    search.set('primaryAddress-address.city[LIKE_NOCASE]', `%${params.city}%`)
+  if (params.regNumber) search.set('regNumber', params.regNumber)
   if (params.offset !== undefined) search.set('offset', String(params.offset))
   if (params.limit !== undefined) search.set('limit', String(params.limit))
   if (params.sortColumn) {
