@@ -1,5 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
+// Vercel's function type-check resolves the global fetch Response to a
+// different type than local @types/node, so pin the small surface we use
+interface UpstreamResponse {
+  status: number
+  headers: { get(name: string): string | null }
+  arrayBuffer(): Promise<ArrayBuffer>
+}
+
 const RAYNET_API_URL = process.env.RAYNET_API_URL
 const RAYNET_BEARER_TOKEN = process.env.RAYNET_BEARER_TOKEN
 
@@ -30,9 +38,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  const upstream = await fetch(url, {
+  const upstream = (await fetch(url, {
     headers: { authorization: `Bearer ${RAYNET_BEARER_TOKEN}` },
-  })
+  })) as unknown as UpstreamResponse
 
   res.status(upstream.status)
   const contentType = upstream.headers.get('content-type')
