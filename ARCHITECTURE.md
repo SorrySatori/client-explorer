@@ -12,6 +12,11 @@ Assignment requirements:
 - React + TypeScript
 - Source code access + online demo (or README with run instructions)
 
+Beyond the assignment, the app adds an advanced filter panel modeled after
+Raynet's own ("Kritéria klientů" subset: state, role, rating, category, city,
+reg. number — all living in URL search params). Saved filters and smart
+filters are intentionally out of scope.
+
 ## Decisions
 
 | Area         | Choice                         | Notes                                                                                                             |
@@ -69,4 +74,6 @@ pnpm build         # tsc -b && vite build
 
 ## Next steps
 
-1. Routes `/clients` (master layout with search params) and `/clients/$clientId` (detail with a loader).
+1. Push the repo to a remote (assignment requires source access).
+2. Deploy to Vercel (online demo) with `RAYNET_*` env vars set in the dashboard.
+3. Final README polish before submission.
