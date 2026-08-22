@@ -1,0 +1,90 @@
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.name {
+  font-size: 26px;
+  font-weight: 400;
+  margin: 10px 0 16px;
+}
+
+.meta {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.logo {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.info {
+  margin: 0;
+  font-size: 13px;
+
+  dt {
+    color: var(--color-text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+
+    &:not(:first-child) {
+      margin-top: 10px;
+    }
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+.mapLink {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.notice {
+  margin: 16px 0 0;
+  font-size: 13px;
+
+  // margins of paragraphs coming from Raynet's rich-text HTML
+  p {
+    margin: 0 0 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.owner {
+  margin: 14px 0 0;
+  font-size: 13px;
+}
+
+.placeholder {
+  border: 1px dashed var(--color-border);
+  border-radius: 4px;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}

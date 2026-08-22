@@ -1,37 +1,62 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --accent: #aa3bff;
+  // Brand (Raynet turquoise) — filter button, table header, links
+  --color-brand: #00a9ca;
+  --color-brand-hover: #0088a2;
+  --color-brand-dark: #004655;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  // Action green — "add" / primary actions
+  --color-action: #43ae00;
+  --color-action-hover: #368c00;
 
-  font: 16px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  // Client state colors
+  --color-state-actual: rgb(96, 174, 0);
+  --color-state-potential: rgb(194, 149, 0);
+  --color-state-deferred: var(--color-text);
+  --color-state-unattractive: rgb(244, 117, 89);
+
+  // Left navigation sidebar
+  --sidebar-gradient: linear-gradient(
+    180deg,
+    #00a9ca 0%,
+    #00a9ca 0.34%,
+    #004655 100%
+  );
+
+  // Neutrals
+  --color-text: #37474f;
+  --color-text-muted: #8fa3ad;
+  --color-border: #e3e8ee;
+  --color-bg: #fff;
+  --color-bg-muted: #f5f7f9;
+
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  font: 14px/1.45 var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --accent: #c084fc;
-  }
-}
-
 * {
   box-sizing: border-box;
+  scrollbar-color: rgba(0, 0, 0, 0.4) transparent;
 }
 
 body {
   margin: 0;
+}
+
+h1,
+h2 {
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0;
+}
+
+a {
+  color: var(--color-brand);
 }

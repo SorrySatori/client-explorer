@@ -74,6 +74,13 @@ export interface Company {
   _version: number
 }
 
+export interface FileRef {
+  id: number
+  contentType: string
+  fileName: string
+  size: number
+}
+
 export interface CompanyDetail extends Company {
   salutation?: string | null
   taxNumber2?: string | null
@@ -84,6 +91,22 @@ export interface CompanyDetail extends Company {
   birthday?: string | null
   addresses?: CompanyAddress[]
   socialNetworkContact?: Record<string, string | null> | null
+  logo?: FileRef | null
+}
+
+// Codelist entry (GET /companyCategory/) — code01 is the label,
+// code02 the category color as a hex value without '#'
+export interface CompanyCategoryItem {
+  id: number
+  code01: string
+  code02: string | null
+}
+
+// GET /icon/{fileId}/ — imgData is a ready-to-use data: URI
+export interface IconResponse {
+  fileName: string
+  contentType: string
+  imgData: string
 }
 
 export const COMPANY_SORT_COLUMNS = [
@@ -149,4 +172,20 @@ export const companyDetailQueryOptions = (companyId: number) =>
       )
       return response.data
     },
+  })
+
+// Categories change rarely — cache them for the whole session
+export const companyCategoriesQueryOptions = () =>
+  queryOptions({
+    queryKey: ['companyCategories'],
+    queryFn: () =>
+      getJson<ListResponse<CompanyCategoryItem>>('companyCategory/'),
+    staleTime: Infinity,
+  })
+
+export const companyLogoQueryOptions = (fileId: number) =>
+  queryOptions({
+    queryKey: ['icon', fileId],
+    queryFn: () => getJson<IconResponse>(`icon/${fileId}/`),
+    staleTime: Infinity,
   })

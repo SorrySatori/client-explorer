@@ -1,0 +1,37 @@
+.page {
+  padding: 24px 32px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detail {
+  min-width: 0;
+}
+
+.loading {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease 0.2s;
+}
+
+.error {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  padding: 48px 32px;
+  color: var(--color-text-muted);
+}
