@@ -1,0 +1,8 @@
+# pnpm settings (pnpm >= 10 reads config from this file)
+packages:
+  - '.'
+
+# Build scripts are blocked by default; allow only the ones we trust.
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
