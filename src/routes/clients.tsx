@@ -26,12 +26,25 @@ import styles from '../styles/clients.module.scss'
 
 interface ClientsSearch {
   q?: string
+  name?: string
+  person?: boolean
   state?: CompanyState
   role?: CompanyRole
   rating?: CompanyRating
-  category?: number
+  owner?: number
+  economyActivity?: number
+  turnover?: number
+  legalForm?: number
+  paymentTerm?: number
   city?: string
+  email?: string
   regNumber?: string
+  taxNumber?: string
+  category?: number
+  classification1?: number
+  classification2?: number
+  classification3?: number
+  tags?: string
 }
 
 const oneOf = <T extends string>(
@@ -42,14 +55,30 @@ const oneOf = <T extends string>(
 const nonEmpty = (value: unknown): string | undefined =>
   typeof value === 'string' && value.trim() !== '' ? value : undefined
 
+const intId = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isInteger(value) ? value : undefined
+
 const listParams = (search: ClientsSearch): CompanyListParams => ({
   fulltext: search.q,
+  name: search.name,
+  person: search.person,
   state: search.state,
   role: search.role,
   rating: search.rating,
-  category: search.category,
+  owner: search.owner,
+  economyActivity: search.economyActivity,
+  turnover: search.turnover,
+  legalForm: search.legalForm,
+  paymentTerm: search.paymentTerm,
   city: search.city,
+  email: search.email,
   regNumber: search.regNumber,
+  taxNumber: search.taxNumber,
+  category: search.category,
+  classification1: search.classification1,
+  classification2: search.classification2,
+  classification3: search.classification3,
+  tags: search.tags,
   sortColumn: 'name',
 })
 
@@ -60,15 +89,25 @@ export const Route = createFileRoute('/clients')({
       search.q.trim().length >= SEARCH_MIN_LENGTH
         ? search.q
         : undefined,
+    name: nonEmpty(search.name),
+    person: typeof search.person === 'boolean' ? search.person : undefined,
     state: oneOf(search.state, COMPANY_STATES),
     role: oneOf(search.role, COMPANY_ROLES),
     rating: oneOf(search.rating, COMPANY_RATINGS),
-    category:
-      typeof search.category === 'number' && Number.isInteger(search.category)
-        ? search.category
-        : undefined,
+    owner: intId(search.owner),
+    economyActivity: intId(search.economyActivity),
+    turnover: intId(search.turnover),
+    legalForm: intId(search.legalForm),
+    paymentTerm: intId(search.paymentTerm),
     city: nonEmpty(search.city),
+    email: nonEmpty(search.email),
     regNumber: nonEmpty(search.regNumber),
+    taxNumber: nonEmpty(search.taxNumber),
+    category: intId(search.category),
+    classification1: intId(search.classification1),
+    classification2: intId(search.classification2),
+    classification3: intId(search.classification3),
+    tags: nonEmpty(search.tags),
   }),
   loaderDeps: ({ search }) => search,
   loader: ({ context: { queryClient }, deps }) =>
