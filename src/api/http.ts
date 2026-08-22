@@ -42,5 +42,15 @@ export async function getJson<T>(
     throw new ApiError(response.status, message)
   }
 
+  // Guard against misrouted responses (e.g. an SPA fallback serving HTML
+  // with status 200) so the failure is readable instead of a JSON.parse error
+  const contentType = response.headers.get('content-type') ?? ''
+  if (!contentType.includes('application/json')) {
+    throw new ApiError(
+      response.status,
+      `Unexpected non-JSON response (${contentType || 'unknown content type'})`,
+    )
+  }
+
   return response.json() as Promise<T>
 }
