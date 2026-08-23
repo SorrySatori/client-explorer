@@ -4,7 +4,16 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  color: #fff;
-  background: var(--chip-color, var(--color-text-muted));
+  // Exact colors for known Raynet palette entries come via --chip-bg/--chip-text
+  // (see CategoryChip.tsx); unknown category colors get a pale background and
+  // dark text derived from the stored color
+  color: var(
+    --chip-text,
+    color-mix(in srgb, var(--chip-color, var(--color-text-muted)) 60%, #000)
+  );
+  background: var(
+    --chip-bg,
+    color-mix(in srgb, var(--chip-color, var(--color-text-muted)) 30%, #fff)
+  );
   white-space: nowrap;
 }
