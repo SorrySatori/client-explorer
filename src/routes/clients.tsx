@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   createFileRoute,
   Outlet,
@@ -19,6 +20,7 @@ import {
   type CompanyState,
 } from '../api/companies'
 import { ClientsTable } from '../components/ClientsTable'
+import { ColumnsModal, useVisibleColumns } from '../components/columns'
 import { ActiveFilters, Filters } from '../components/filters'
 import { SearchBox, SEARCH_MIN_LENGTH } from '../components/SearchBox'
 import ui from '../styles/ui.module.scss'
@@ -140,6 +142,8 @@ function ClientsPage() {
   const { data: list } = useSuspenseQuery(
     companyListQueryOptions(listParams(search)),
   )
+  const { visibleKeys, toggleColumn, resetColumns } = useVisibleColumns()
+  const [columnsOpen, setColumnsOpen] = useState(false)
   const navigate = useNavigate()
   // number thanks to params.parse on the detail route; undefined = no selection
   const { clientId: selectedId } = useParams({ strict: false })
@@ -162,6 +166,15 @@ function ClientsPage() {
         <Filters />
       </div>
 
+      {columnsOpen && (
+        <ColumnsModal
+          visibleKeys={visibleKeys}
+          onToggle={toggleColumn}
+          onReset={resetColumns}
+          onClose={() => setColumnsOpen(false)}
+        />
+      )}
+
       <SearchBox />
 
       <ActiveFilters />
@@ -171,8 +184,10 @@ function ClientsPage() {
       >
         <ClientsTable
           companies={list.data}
+          visibleColumnKeys={visibleKeys}
           selectedId={selectedId}
           onSelect={toggleSelectedClient}
+          onEditColumns={() => setColumnsOpen(true)}
         />
 
         <aside className={styles.detail}>

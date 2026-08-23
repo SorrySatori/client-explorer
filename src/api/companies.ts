@@ -81,6 +81,12 @@ export interface Company {
   taxNumber: string | null
   category: EnumRef | null
   legalForm: EnumRef | null
+  economyActivity: EnumRef | null
+  turnover: EnumRef | null
+  paymentTerm: EnumRef | null
+  companyClassification1: EnumRef | null
+  companyClassification2: EnumRef | null
+  companyClassification3: EnumRef | null
   primaryAddress: CompanyAddress | null
   contactAddress?: CompanyAddress | null
   notice: string | null
