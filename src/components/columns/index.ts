@@ -1,3 +1,4 @@
 export { ColumnsModal } from './ColumnsModal'
 export { useVisibleColumns } from './useVisibleColumns'
+export { useTableSort, type TableSort } from './useTableSort'
 export { ALL_COLUMNS } from './columnConfig'
