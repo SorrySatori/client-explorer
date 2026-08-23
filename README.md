@@ -2,6 +2,8 @@
 
 Master–detail client directory: list, detail, filtering, and full-text search.
 
+**Online demo:** <https://client-explorer.vercel.app>
+
 See [ARCHITECTURE.md](ARCHITECTURE.md) for tech decisions, data flow, and next steps.
 
 ## Prerequisites
@@ -13,15 +15,15 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for tech decisions, data flow, and next s
 
 ```bash
 pnpm install
-pnpm dev           # frontend only (calls to /api will 404)
-vercel dev         # frontend + serverless API proxy (needs .env, see .env.example)
+cp .env.example .env   # fill in RAYNET_API_URL + RAYNET_BEARER_TOKEN
+pnpm dev               # Vite dev server; /api/* runs the same serverless handler as prod
 ```
 
 ## Scripts
 
 | Script            | Description                                |
 | ----------------- | ------------------------------------------ |
-| `pnpm dev`        | Vite dev server                            |
+| `pnpm dev`        | Vite dev server (incl. the `/api` handler) |
 | `pnpm build`      | Type-check (`tsc -b`) and production build |
 | `pnpm test`       | Run tests once (Vitest)                    |
 | `pnpm test:watch` | Run tests in watch mode                    |
