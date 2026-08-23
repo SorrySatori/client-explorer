@@ -1,5 +1,5 @@
 // Czech labels for Raynet enums (matching Raynet's own UI wording)
-import type { CompanyRole, CompanyState } from './api/companies'
+import type { CompanyRole, CompanyState } from '../api/companies'
 
 export const STATE_LABELS: Record<CompanyState, string> = {
   A_POTENTIAL: 'Potenciální',

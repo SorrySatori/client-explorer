@@ -1,5 +1,5 @@
 import type { CompanyState } from '../api/companies'
-import { STATE_LABELS } from '../labels'
+import { STATE_LABELS } from '../constants/labels'
 import styles from './ClientState.module.scss'
 
 const STATE_CLASS: Record<CompanyState, string> = {

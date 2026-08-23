@@ -19,7 +19,7 @@ import {
   type CompanyState,
 } from '../api/companies'
 import { ClientsTable } from '../components/ClientsTable'
-import { ActiveFilters, Filters } from '../components/Filters'
+import { ActiveFilters, Filters } from '../components/filters'
 import { SearchBox, SEARCH_MIN_LENGTH } from '../components/SearchBox'
 import ui from '../styles/ui.module.scss'
 import styles from '../styles/clients.module.scss'
