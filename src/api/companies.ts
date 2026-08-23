@@ -1,6 +1,8 @@
 import { queryOptions } from '@tanstack/react-query'
 import { getJson, type DetailResponse, type ListResponse } from './http'
 
+// --- Enum values (as documented by the Raynet API) ---
+
 export const COMPANY_RATINGS = ['A', 'B', 'C'] as const
 export type CompanyRating = (typeof COMPANY_RATINGS)[number]
 
@@ -20,6 +22,8 @@ export const COMPANY_ROLES = [
   'E_OWN',
 ] as const
 export type CompanyRole = (typeof COMPANY_ROLES)[number]
+
+// --- Entities ---
 
 export interface EnumRef {
   id: number
@@ -106,6 +110,8 @@ export interface CompanyDetail extends Company {
   logo?: FileRef | null
 }
 
+// --- Auxiliary endpoints (codelists, users, icons) ---
+
 // Codelist entry (e.g. GET /companyCategory/) — code01 is the label,
 // code02 an optional color as a hex value without '#'
 export interface CodelistItem {
@@ -137,6 +143,8 @@ export interface IconResponse {
   contentType: string
   imgData: string
 }
+
+// --- List parameters and query construction ---
 
 export const COMPANY_SORT_COLUMNS = [
   'id',
@@ -180,53 +188,71 @@ export interface CompanyListParams {
   sortDirection?: SortDirection
 }
 
-// codelist-id filters that map 1:1 to a query param
-const ID_PARAMS = [
-  ['owner', 'owner'],
-  ['category', 'category'],
-  ['economyActivity', 'economyActivity'],
-  ['turnover', 'turnover'],
-  ['legalForm', 'legalForm'],
-  ['paymentTerm', 'paymentTerm'],
-  ['classification1', 'companyClassification1'],
-  ['classification2', 'companyClassification2'],
-  ['classification3', 'companyClassification3'],
-] as const satisfies readonly [keyof CompanyListParams, string][]
+const contains = (value: string) => (value ? `%${value}%` : undefined)
+const nonEmpty = (value: string) => value || undefined
+
+type FilterKey = keyof Omit<CompanyListParams, 'sortColumn' | 'sortDirection'>
+
+// How each filter maps to a Raynet query param. A serializer returning
+// undefined skips the param (empty or whitespace-only input). The mapped
+// type is exhaustive: a new key in CompanyListParams fails to compile
+// until it gets a mapping here.
+const QUERY_PARAMS: {
+  [K in FilterKey]-?: readonly [
+    param: string,
+    serialize: (value: NonNullable<CompanyListParams[K]>) => string | undefined,
+  ]
+} = {
+  fulltext: ['fulltext', (value) => value.trim() || undefined],
+  name: ['name[LIKE_NOCASE]', contains],
+  person: ['person', String],
+  rating: ['rating', String],
+  state: ['state', String],
+  role: ['role', String],
+  owner: ['owner', String],
+  category: ['category', String],
+  economyActivity: ['economyActivity', String],
+  turnover: ['turnover', String],
+  legalForm: ['legalForm', String],
+  paymentTerm: ['paymentTerm', String],
+  classification1: ['companyClassification1', String],
+  classification2: ['companyClassification2', String],
+  classification3: ['companyClassification3', String],
+  city: ['primaryAddress-address.city[LIKE_NOCASE]', contains],
+  email: ['primaryAddress-contactInfo.email[LIKE_NOCASE]', contains],
+  regNumber: ['regNumber', nonEmpty],
+  taxNumber: ['taxNumber', nonEmpty],
+  tags: ['tags', nonEmpty],
+  offset: ['offset', String],
+  limit: ['limit', String],
+}
 
 export function buildCompanyListSearch(
   params: CompanyListParams,
 ): URLSearchParams {
   const search = new URLSearchParams()
-  const fulltext = params.fulltext?.trim()
-  if (fulltext) search.set('fulltext', fulltext)
-  // "contains, case-insensitive" — Raynet's LIKE uses % as the wildcard
-  if (params.name) search.set('name[LIKE_NOCASE]', `%${params.name}%`)
-  if (params.person !== undefined) search.set('person', String(params.person))
-  if (params.rating) search.set('rating', params.rating)
-  if (params.state) search.set('state', params.state)
-  if (params.role) search.set('role', params.role)
-  for (const [key, param] of ID_PARAMS) {
+
+  for (const key of Object.keys(QUERY_PARAMS) as FilterKey[]) {
     const value = params[key]
-    if (value !== undefined) search.set(param, String(value))
-  }
-  if (params.city)
-    search.set('primaryAddress-address.city[LIKE_NOCASE]', `%${params.city}%`)
-  if (params.email)
-    search.set(
-      'primaryAddress-contactInfo.email[LIKE_NOCASE]',
-      `%${params.email}%`,
+    if (value === undefined) continue
+    const [param, serialize] = QUERY_PARAMS[key]
+    // TS cannot correlate a value with its own serializer across the union
+    const serialized = (serialize as (value: unknown) => string | undefined)(
+      value,
     )
-  if (params.regNumber) search.set('regNumber', params.regNumber)
-  if (params.taxNumber) search.set('taxNumber', params.taxNumber)
-  if (params.tags) search.set('tags', params.tags)
-  if (params.offset !== undefined) search.set('offset', String(params.offset))
-  if (params.limit !== undefined) search.set('limit', String(params.limit))
+    if (serialized !== undefined) search.set(param, serialized)
+  }
+
+  // sorting is the one pair that travels together
   if (params.sortColumn) {
     search.set('sortColumn', params.sortColumn)
     search.set('sortDirection', params.sortDirection ?? 'ASC')
   }
+
   return search
 }
+
+// --- Query options ---
 
 export const companyListQueryOptions = (params: CompanyListParams = {}) =>
   queryOptions({

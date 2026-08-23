@@ -1,5 +1,5 @@
 import type { Company } from '../api/companies'
-import { ROLE_LABELS } from '../labels'
+import { ROLE_LABELS } from '../constants/labels'
 import { CategoryChip } from './CategoryChip'
 import { ClientState } from './ClientState'
 import styles from './ClientsTable.module.scss'
