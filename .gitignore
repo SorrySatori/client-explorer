@@ -20,6 +20,11 @@ dist-ssr
 # Vercel
 .vercel
 
+# TanStack Start / Nitro build artifacts
+.output
+.nitro
+.tanstack
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

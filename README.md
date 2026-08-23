@@ -16,7 +16,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for tech decisions, data flow, and next s
 ```bash
 pnpm install
 cp .env.example .env   # fill in RAYNET_API_URL + RAYNET_BEARER_TOKEN
-pnpm dev               # Vite dev server; /api/* runs the same serverless handler as prod
+pnpm dev               # TanStack Start dev server (app + /api proxy route)
 ```
 
 ## Scripts
