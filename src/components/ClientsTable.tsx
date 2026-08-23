@@ -1,33 +1,44 @@
 import type { Company } from '../api/companies'
-import { ROLE_LABELS } from '../constants/labels'
-import { CategoryChip } from './CategoryChip'
-import { ClientState } from './ClientState'
+import { ALL_COLUMNS } from './columns'
 import styles from './ClientsTable.module.scss'
 
 interface ClientsTableProps {
   companies: Company[]
+  visibleColumnKeys: string[]
   selectedId?: number
   onSelect: (companyId: number) => void
+  onEditColumns: () => void
 }
 
 export function ClientsTable({
   companies,
+  visibleColumnKeys,
   selectedId,
   onSelect,
+  onEditColumns,
 }: ClientsTableProps) {
+  const columns = ALL_COLUMNS.filter(
+    (column) => column.alwaysOn || visibleColumnKeys.includes(column.key),
+  )
+
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Název/Jméno</th>
-            <th>Stav</th>
-            <th>Vztah</th>
-            <th>Rating</th>
-            <th>Vlastník</th>
-            <th>IČ</th>
-            <th>Město</th>
-            <th>Kategorie</th>
+            {columns.map((column) => (
+              <th key={column.key}>{column.label}</th>
+            ))}
+            <th className={styles.editColumns}>
+              <button
+                type="button"
+                onClick={onEditColumns}
+                aria-label="Upravit sloupce"
+                title="Upravit sloupce"
+              >
+                <PencilIcon />
+              </button>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -39,25 +50,20 @@ export function ClientsTable({
               }
               onClick={() => onSelect(company.id)}
             >
-              <td className={styles.name}>{company.name}</td>
-              <td>
-                <ClientState state={company.state} />
-              </td>
-              <td>{ROLE_LABELS[company.role]}</td>
-              <td>{company.rating}</td>
-              <td>{company.owner?.fullName ?? '—'}</td>
-              <td>{company.regNumber ?? '—'}</td>
-              <td>{company.primaryAddress?.address.city ?? '—'}</td>
-              <td>
-                {company.category && (
-                  <CategoryChip category={company.category} />
-                )}
-              </td>
+              {columns.map((column) => (
+                <td
+                  key={column.key}
+                  className={column.key === 'name' ? styles.name : undefined}
+                >
+                  {column.render(company)}
+                </td>
+              ))}
+              <td />
             </tr>
           ))}
           {companies.length === 0 && (
             <tr>
-              <td colSpan={8} className={styles.empty}>
+              <td colSpan={columns.length + 1} className={styles.empty}>
                 Žádní klienti nenalezeni.
               </td>
             </tr>
@@ -65,5 +71,23 @@ export function ClientsTable({
         </tbody>
       </table>
     </div>
+  )
+}
+
+function PencilIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+    </svg>
   )
 }

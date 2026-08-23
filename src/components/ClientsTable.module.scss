@@ -41,6 +41,24 @@
   }
 }
 
+.editColumns {
+  width: 36px;
+  text-align: right !important;
+
+  button {
+    border: none;
+    background: none;
+    padding: 2px 4px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      color: var(--color-brand);
+    }
+  }
+}
+
 .rowSelected {
   &,
   &:hover {

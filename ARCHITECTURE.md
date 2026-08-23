@@ -28,10 +28,25 @@ scope (the list API cannot express them).
 | Framework    | TanStack Start (Vite, SPA mode) | Unifies dev and prod: the `/api` proxy is a server route running identically in both. SSR is off (`ssr: false` on the root route) — an authenticated data app needs no SEO. |
 | Routing      | TanStack Router (file-based)    | Filters and full-text search live in the URL as search params (`validateSearch`), deep links work out of the box.                                                           |
 | Server state | TanStack Query                  | `queryClient` is in the router context → loaders call `ensureQueryData`, components use `useSuspenseQuery`.                                                                 |
-| Client state | `useState`                      | The app is small, no need for Zustand/Context.                                                                                                                              |
+| Client state | `useState` (+ localStorage)     | The app is small, no need for Zustand/Context. Column visibility persists in localStorage — see "Where state lives".                                                        |
 | Styling      | SCSS Modules (`*.module.scss`)  | Global tokens in `src/index.scss`.                                                                                                                                          |
 | Testing      | Vitest + React Testing Library  | A few targeted tests, not blanket coverage. Setup in `src/setupTests.ts`.                                                                                                   |
 | Deploy       | Vercel                          | Nitro build adapter — one deployment serves the SPA shell and the `/api` server route.                                                                                      |
+
+## Where state lives
+
+- **URL search params** — _what data am I looking at_: fulltext and all
+  filter criteria (validated in `validateSearch`). Shareable and
+  deep-linkable; a copied link reproduces the same result set.
+- **localStorage** — _personal view preferences_: the visible table columns
+  (`useVisibleColumns`). Deliberately not URL params (they would leak a
+  personal layout into every shared link) and not plain React state (it
+  would reset on every reload). Raynet stores its column setup server-side
+  per user; this app has no backend of its own, so localStorage is the
+  closest equivalent.
+- **React state (`useState`)** — _ephemeral UI_: open panels and modals,
+  draft filter rows, input drafts before commit.
+- **TanStack Query cache** — all server data, keyed by query params.
 
 ## Data and API
 
