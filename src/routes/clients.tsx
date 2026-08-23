@@ -20,7 +20,11 @@ import {
   type CompanyState,
 } from '../api/companies'
 import { ClientsTable } from '../components/ClientsTable'
-import { ColumnsModal, useVisibleColumns } from '../components/columns'
+import {
+  ALL_COLUMNS,
+  ColumnsModal,
+  useVisibleColumns,
+} from '../components/columns'
 import { ActiveFilters, Filters } from '../components/filters'
 import { SearchBox, SEARCH_MIN_LENGTH } from '../components/SearchBox'
 import ui from '../styles/ui.module.scss'
@@ -47,6 +51,9 @@ interface ClientsSearch {
   classification2?: number
   classification3?: number
   tags?: string
+  // client-side table sorting (column key from the columns config)
+  sort?: string
+  sortDir?: 'desc' | 'asc'
 }
 
 const oneOf = <T extends string>(
@@ -85,32 +92,41 @@ const listParams = (search: ClientsSearch): CompanyListParams => ({
 })
 
 export const Route = createFileRoute('/clients')({
-  validateSearch: (search: Record<string, unknown>): ClientsSearch => ({
-    q:
-      typeof search.q === 'string' &&
-      search.q.trim().length >= SEARCH_MIN_LENGTH
-        ? search.q
+  validateSearch: (search: Record<string, unknown>): ClientsSearch => {
+    const sort = ALL_COLUMNS.some((column) => column.key === search.sort)
+      ? (search.sort as string)
+      : undefined
+    return {
+      sort,
+      sortDir: sort
+        ? (oneOf(search.sortDir, ['desc', 'asc']) ?? 'desc')
         : undefined,
-    name: nonEmpty(search.name),
-    person: typeof search.person === 'boolean' ? search.person : undefined,
-    state: oneOf(search.state, COMPANY_STATES),
-    role: oneOf(search.role, COMPANY_ROLES),
-    rating: oneOf(search.rating, COMPANY_RATINGS),
-    owner: intId(search.owner),
-    economyActivity: intId(search.economyActivity),
-    turnover: intId(search.turnover),
-    legalForm: intId(search.legalForm),
-    paymentTerm: intId(search.paymentTerm),
-    city: nonEmpty(search.city),
-    email: nonEmpty(search.email),
-    regNumber: nonEmpty(search.regNumber),
-    taxNumber: nonEmpty(search.taxNumber),
-    category: intId(search.category),
-    classification1: intId(search.classification1),
-    classification2: intId(search.classification2),
-    classification3: intId(search.classification3),
-    tags: nonEmpty(search.tags),
-  }),
+      q:
+        typeof search.q === 'string' &&
+        search.q.trim().length >= SEARCH_MIN_LENGTH
+          ? search.q
+          : undefined,
+      name: nonEmpty(search.name),
+      person: typeof search.person === 'boolean' ? search.person : undefined,
+      state: oneOf(search.state, COMPANY_STATES),
+      role: oneOf(search.role, COMPANY_ROLES),
+      rating: oneOf(search.rating, COMPANY_RATINGS),
+      owner: intId(search.owner),
+      economyActivity: intId(search.economyActivity),
+      turnover: intId(search.turnover),
+      legalForm: intId(search.legalForm),
+      paymentTerm: intId(search.paymentTerm),
+      city: nonEmpty(search.city),
+      email: nonEmpty(search.email),
+      regNumber: nonEmpty(search.regNumber),
+      taxNumber: nonEmpty(search.taxNumber),
+      category: intId(search.category),
+      classification1: intId(search.classification1),
+      classification2: intId(search.classification2),
+      classification3: intId(search.classification3),
+      tags: nonEmpty(search.tags),
+    }
+  },
   loaderDeps: ({ search }) => search,
   loader: ({ context: { queryClient }, deps }) =>
     Promise.all([

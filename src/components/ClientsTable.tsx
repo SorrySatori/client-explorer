@@ -1,5 +1,5 @@
 import type { Company } from '../api/companies'
-import { ALL_COLUMNS } from './columns'
+import { ALL_COLUMNS, useTableSort, type TableSort } from './columns'
 import styles from './ClientsTable.module.scss'
 
 interface ClientsTableProps {
@@ -10,6 +10,34 @@ interface ClientsTableProps {
   onEditColumns: () => void
 }
 
+// numeric: "123" < "26843820"; base sensitivity: case/accent-insensitive
+const collator = new Intl.Collator('cs', {
+  numeric: true,
+  sensitivity: 'base',
+})
+
+// Sorts what the user sees (column sortValue accessors); the dataset is one
+// unpaginated list, so client-side sorting covers every column — the API
+// itself can only sort by a handful of fields
+function sortCompanies(companies: Company[], sort: TableSort): Company[] {
+  const column = ALL_COLUMNS.find((item) => item.key === sort.key)
+  if (!column) return companies
+
+  return [...companies].sort((x, y) => {
+    const a = column.sortValue(x)
+    const b = column.sortValue(y)
+    // missing values go last in both directions
+    if (a === null && b === null) return 0
+    if (a === null) return 1
+    if (b === null) return -1
+    const result =
+      typeof a === 'number' && typeof b === 'number'
+        ? a - b
+        : collator.compare(String(a), String(b))
+    return sort.direction === 'desc' ? -result : result
+  })
+}
+
 export function ClientsTable({
   companies,
   visibleColumnKeys,
@@ -17,9 +45,13 @@ export function ClientsTable({
   onSelect,
   onEditColumns,
 }: ClientsTableProps) {
+  const { sort, cycleSort } = useTableSort()
+
+  // config order determines column order, the picker only says which
   const columns = ALL_COLUMNS.filter(
     (column) => column.alwaysOn || visibleColumnKeys.includes(column.key),
   )
+  const rows = sort ? sortCompanies(companies, sort) : companies
 
   return (
     <div className={styles.tableWrap}>
@@ -27,7 +59,29 @@ export function ClientsTable({
         <thead>
           <tr>
             {columns.map((column) => (
-              <th key={column.key}>{column.label}</th>
+              <th
+                key={column.key}
+                aria-sort={
+                  sort?.key === column.key
+                    ? sort.direction === 'desc'
+                      ? 'descending'
+                      : 'ascending'
+                    : undefined
+                }
+              >
+                <button
+                  type="button"
+                  className={styles.sortButton}
+                  onClick={() => cycleSort(column.key)}
+                >
+                  {column.label}
+                  {sort?.key === column.key && (
+                    <span className={styles.sortArrow} aria-hidden="true">
+                      {sort.direction === 'desc' ? '▼' : '▲'}
+                    </span>
+                  )}
+                </button>
+              </th>
             ))}
             <th className={styles.editColumns}>
               <button
@@ -42,7 +96,7 @@ export function ClientsTable({
           </tr>
         </thead>
         <tbody>
-          {companies.map((company) => (
+          {rows.map((company) => (
             <tr
               key={company.id}
               className={
@@ -61,7 +115,7 @@ export function ClientsTable({
               <td />
             </tr>
           ))}
-          {companies.length === 0 && (
+          {rows.length === 0 && (
             <tr>
               <td colSpan={columns.length + 1} className={styles.empty}>
                 Žádní klienti nenalezeni.

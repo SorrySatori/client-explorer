@@ -35,9 +35,14 @@ scope (the list API cannot express them).
 
 ## Where state lives
 
-- **URL search params** — _what data am I looking at_: fulltext and all
-  filter criteria (validated in `validateSearch`). Shareable and
-  deep-linkable; a copied link reproduces the same result set.
+- **URL search params** — _what data am I looking at_: fulltext, all filter
+  criteria, and table sorting (`sort`/`sortDir`), validated in
+  `validateSearch`. Shareable and deep-linkable; a copied link reproduces
+  the same result set in the same order. Sorting is applied client-side
+  over the loaded list (the API can only sort by a handful of fields, while
+  the column `sortValue` accessors sort what the user actually sees), but
+  it is still query state, not view state — the row order is part of what
+  a shared link must reproduce.
 - **localStorage** — _personal view preferences_: the visible table columns
   (`useVisibleColumns`). Deliberately not URL params (they would leak a
   personal layout into every shared link) and not plain React state (it
