@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import DOMPurify from 'dompurify'
 import {
@@ -10,19 +10,19 @@ import { ClientState } from '../components/ClientState'
 import styles from '../styles/detail.module.scss'
 
 export const Route = createFileRoute('/clients/$clientId')({
+  params: {
+    parse: (params) => ({ clientId: Number(params.clientId) }),
+    stringify: (params) => ({ clientId: String(params.clientId) }),
+  },
   loader: ({ context: { queryClient }, params }) =>
-    queryClient.ensureQueryData(
-      companyDetailQueryOptions(Number(params.clientId)),
-    ),
+    queryClient.ensureQueryData(companyDetailQueryOptions(params.clientId)),
   errorComponent: DetailError,
   component: ClientDetailPanel,
 })
 
 function ClientDetailPanel() {
   const { clientId } = Route.useParams()
-  const { data: client } = useSuspenseQuery(
-    companyDetailQueryOptions(Number(clientId)),
-  )
+  const { data: client } = useSuspenseQuery(companyDetailQueryOptions(clientId))
   const address = client.primaryAddress?.address
 
   return (
@@ -30,6 +30,14 @@ function ClientDetailPanel() {
       <header className={styles.header}>
         {client.category && <CategoryChip category={client.category} />}
         <ClientState state={client.state} />
+        <Link
+          to="/clients"
+          search={true}
+          className={styles.close}
+          aria-label="Zavřít detail"
+        >
+          ✕
+        </Link>
       </header>
 
       <h2 className={styles.name}>{client.name}</h2>

@@ -141,9 +141,19 @@ function ClientsPage() {
     companyListQueryOptions(listParams(search)),
   )
   const navigate = useNavigate()
-  const { clientId } = useParams({ strict: false })
+  // number thanks to params.parse on the detail route; undefined = no selection
+  const { clientId: selectedId } = useParams({ strict: false })
   // Dim the stale table while a slow search navigation is loading new data
   const isNavigating = useRouterState({ select: (state) => state.isLoading })
+
+  const toggleSelectedClient = (companyId: number) =>
+    companyId === selectedId
+      ? navigate({ to: '/clients', search: true })
+      : navigate({
+          to: '/clients/$clientId',
+          params: { clientId: companyId },
+          search: true,
+        })
 
   return (
     <div className={styles.page}>
@@ -161,14 +171,8 @@ function ClientsPage() {
       >
         <ClientsTable
           companies={list.data}
-          selectedId={clientId ? Number(clientId) : undefined}
-          onSelect={(companyId) =>
-            navigate({
-              to: '/clients/$clientId',
-              params: { clientId: String(companyId) },
-              search: true,
-            })
-          }
+          selectedId={selectedId}
+          onSelect={toggleSelectedClient}
         />
 
         <aside className={styles.detail}>
