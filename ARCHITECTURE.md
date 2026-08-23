@@ -23,26 +23,28 @@ scope (the list API cannot express them).
 
 ## Decisions
 
-| Area         | Choice                         | Notes                                                                                                             |
-| ------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| Build tool   | Vite                           |                                                                                                                   |
-| Routing      | TanStack Router (file-based)   | Filters and full-text search live in the URL as search params (`validateSearch`), deep links work out of the box. |
-| Server state | TanStack Query                 | `queryClient` is in the router context → loaders call `ensureQueryData`, components use `useSuspenseQuery`.       |
-| Client state | `useState`                     | The app is small, no need for Zustand/Context.                                                                    |
-| Styling      | SCSS Modules (`*.module.scss`) | Global tokens in `src/index.scss`.                                                                                |
-| Testing      | Vitest + React Testing Library | A few targeted tests, not blanket coverage. Setup in `src/setupTests.ts`.                                         |
-| Deploy       | Vercel                         | Frontend + serverless function in one project.                                                                    |
+| Area         | Choice                          | Notes                                                                                                                                                                       |
+| ------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework    | TanStack Start (Vite, SPA mode) | Unifies dev and prod: the `/api` proxy is a server route running identically in both. SSR is off (`ssr: false` on the root route) — an authenticated data app needs no SEO. |
+| Routing      | TanStack Router (file-based)    | Filters and full-text search live in the URL as search params (`validateSearch`), deep links work out of the box.                                                           |
+| Server state | TanStack Query                  | `queryClient` is in the router context → loaders call `ensureQueryData`, components use `useSuspenseQuery`.                                                                 |
+| Client state | `useState`                      | The app is small, no need for Zustand/Context.                                                                                                                              |
+| Styling      | SCSS Modules (`*.module.scss`)  | Global tokens in `src/index.scss`.                                                                                                                                          |
+| Testing      | Vitest + React Testing Library  | A few targeted tests, not blanket coverage. Setup in `src/setupTests.ts`.                                                                                                   |
+| Deploy       | Vercel                          | Nitro build adapter — one deployment serves the SPA shell and the `/api` server route.                                                                                      |
 
 ## Data and API
 
 - Data is owned by **Raynet CRM** (REST API v2, `https://app.raynet.cz/api/v2/`);
   the frontend never talks to it directly. Clients are the `company` entity.
-- The serverless function ([api/[...path].ts](api/%5B...path%5D.ts)) is a **read-only**
-  proxy `/api/<path>` → `${RAYNET_API_URL}/<path>`: it attaches
+- The server route ([`src/routes/api/$.ts`](src/routes/api/%24.ts)) is a
+  **read-only** proxy `/api/<path>` → `${RAYNET_API_URL}/<path>`: it attaches
   `Authorization: Bearer ${RAYNET_BEARER_TOKEN}` server-side and rejects
-  non-GET methods (Raynet exposes writes on the same paths — the token must
-  not be abusable through the proxy). The bearer token already carries the
-  instance context, so no `X-Instance-*` headers are needed; it can be
+  non-GET methods with 405 (Raynet exposes writes on the same paths — the
+  token must not be abusable through the proxy). As a TanStack Start server
+  route it runs natively in the dev server and in the production build —
+  one implementation for both environments. The bearer token already carries
+  the instance context, so no `X-Instance-*` headers are needed; it can be
   generated via `GET /security/bearertoken` (basic auth: username + API key +
   `X-Instance-Name`).
 - Env vars: `RAYNET_API_URL`, `RAYNET_BEARER_TOKEN` (see [.env.example](.env.example),
@@ -65,35 +67,37 @@ scope (the list API cannot express them).
 
 ```bash
 nvm use            # Node 24 LTS (.nvmrc)
-pnpm dev           # frontend + /api dev proxy (needs .env, see .env.example)
+pnpm dev           # app + /api server route (needs .env, see .env.example)
 pnpm test          # vitest
 pnpm lint
 pnpm build         # tsc -b && vite build
 ```
 
-- Dev and production run the **same serverless handler**: a small plugin in
-  [vite.config.ts](vite.config.ts) mounts [api/[...path].ts](api/%5B...path%5D.ts)
-  on `/api/*` in the dev server (mirroring the vercel.json rewrite, including
-  the `path` query param). Only the thin request/response adapter and the
-  `.env` loading are dev-specific — there is no separate dev proxy that could
-  drift from production behavior.
+- The `/api` server route runs natively in `pnpm dev` — no proxy or emulation
+  layer. The only dev-specific bit is [vite.config.ts](vite.config.ts) copying
+  `RAYNET_*` from `.env` into `process.env` (production reads them from the
+  Vercel dashboard).
+- Unit tests run without the Start/Nitro plugins (see the `mode === 'test'`
+  branch in [vite.config.ts](vite.config.ts)) — they need only jsdom.
 
-- `src/routeTree.gen.ts` is generated by the router plugin on Vite startup — do not edit; kept in git because `tsc -b` needs it.
+- `src/routeTree.gen.ts` is generated by the TanStack Start plugin on Vite startup — do not edit; kept in git because `tsc -b` needs it.
 - The ESLint rule `react-refresh/only-export-components` is disabled for `src/routes/**`
   (route files export `Route` alongside components; HMR is handled by the router plugin).
 
 ## Deployment
 
-- Vercel (Vite preset), online demo: <https://client-explorer.vercel.app>.
-  The SPA fallback rewrite excludes `/api/` so function routes are not
-  shadowed by `index.html`.
-- Outside Next.js, Vercel deploys bracket functions like `api/[...path].ts`
-  but does **not** generate the dynamic route for them — without help,
-  `/api/company` returns a platform 404 while the function answers only on
-  its literal path. [vercel.json](vercel.json) therefore maps it explicitly:
-  `/api/:path(.*)` → `/api/[...path]?path=:path`. The `(.*)` matcher (rather
-  than `:path*`) also matches and preserves trailing slashes, which Raynet
-  collection endpoints (`/company/`) require.
+- Vercel, online demo: <https://client-explorer.vercel.app>. The `nitro`
+  Vite plugin detects the Vercel environment at build time and emits the
+  proper output (SPA shell + static assets + the `/api` server route as a
+  function) — no `vercel.json` needed.
+- SPA mode (`spa.enabled` in [vite.config.ts](vite.config.ts)) prerenders
+  the app shell at build time; routes render entirely on the client
+  (`ssr: false` on the root route), so loaders can fetch the relative
+  `/api` proxy.
+- The project previously deployed as a plain Vite SPA + a standalone Vercel
+  serverless function; it was migrated to TanStack Start to unify the dev
+  and prod server runtime (see git history for the routing workarounds this
+  removed).
 
 ## Next steps
 
