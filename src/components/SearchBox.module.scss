@@ -1,6 +1,7 @@
 .search {
   position: relative;
-  width: 280px;
+  width: 100%;
+  max-width: 280px;
   margin: 16px 0 28px;
   color: var(--color-text-muted);
 
