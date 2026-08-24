@@ -4,10 +4,6 @@
   --color-brand-hover: #0088a2;
   --color-brand-dark: #004655;
 
-  // Action green — "add" / primary actions
-  --color-action: #43ae00;
-  --color-action-hover: #368c00;
-
   // Client state colors
   --color-state-actual: rgb(96, 174, 0);
   --color-state-potential: rgb(194, 149, 0);
@@ -17,9 +13,9 @@
   // Left navigation sidebar
   --sidebar-gradient: linear-gradient(
     180deg,
-    #00a9ca 0%,
-    #00a9ca 0.34%,
-    #004655 100%
+    var(--color-brand) 0%,
+    var(--color-brand) 0.34%,
+    var(--color-brand-dark) 100%
   );
 
   // Neutrals

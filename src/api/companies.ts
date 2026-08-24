@@ -152,20 +152,17 @@ export interface IconResponse {
 
 // --- List parameters and query construction ---
 
-export const COMPANY_SORT_COLUMNS = [
-  'id',
-  'rowInfo.createdAt',
-  'rowInfo.updatedAt',
-  'rowInfo.lastModifiedAt',
-  'name',
-  'regNumber',
-] as const
-
-export type CompanySortColumn = (typeof COMPANY_SORT_COLUMNS)[number]
+// Columns the Raynet API itself can sort by (everything else is sorted
+// client-side in the table)
+export type CompanySortColumn =
+  | 'id'
+  | 'rowInfo.createdAt'
+  | 'rowInfo.updatedAt'
+  | 'rowInfo.lastModifiedAt'
+  | 'name'
+  | 'regNumber'
 
 export type SortDirection = 'ASC' | 'DESC'
-
-export const DEFAULT_PAGE_SIZE = 50
 
 export interface CompanyListParams {
   fulltext?: string
