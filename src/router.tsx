@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import { PendingFallback } from './components/PendingFallback'
+import { NotFound } from './components/NotFound'
 
 // TanStack Start convention: called once per pageload to build the router
 export function getRouter() {
@@ -23,6 +24,7 @@ export function getRouter() {
     defaultPreload: 'intent',
     defaultPendingComponent: PendingFallback,
     defaultPendingMs: 300,
+    defaultNotFoundComponent: NotFound,
     Wrap: ({ children }) => (
       <StrictMode>
         <QueryClientProvider client={queryClient}>

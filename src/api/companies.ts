@@ -225,7 +225,15 @@ const QUERY_PARAMS: {
   email: ['primaryAddress-contactInfo.email[LIKE_NOCASE]', contains],
   regNumber: ['regNumber', nonEmpty],
   taxNumber: ['taxNumber', nonEmpty],
-  tags: ['tags', nonEmpty],
+  tags: [
+    'tags',
+    (value) =>
+      value
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .join(',') || undefined,
+  ],
   offset: ['offset', String],
   limit: ['limit', String],
 }
