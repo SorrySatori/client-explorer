@@ -37,8 +37,16 @@ export const Route = createFileRoute('/api/$')({
         // Preserve the exact path including trailing slashes (Raynet
         // collection endpoints require them) and the whole query string
         const path = url.pathname.replace(/^\/api\//, '')
-        const upstream = new URL(path, base.endsWith('/') ? base : `${base}/`)
+        const baseUrl = new URL(base.endsWith('/') ? base : `${base}/`)
+        const upstream = new URL(path, baseUrl)
         upstream.search = url.search
+        
+        if (
+          upstream.origin !== baseUrl.origin ||
+          !upstream.pathname.startsWith(baseUrl.pathname)
+        ) {
+          return Response.json({ error: 'Invalid path' }, { status: 400 })
+        }
 
         const response = await fetch(upstream, {
           headers: { authorization: `Bearer ${token}` },

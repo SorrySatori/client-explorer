@@ -16,16 +16,6 @@
   }
 }
 
-// "add" / primary action (green)
-.buttonAction {
-  composes: button;
-  background: var(--color-action);
-
-  &:hover:not(:disabled) {
-    background: var(--color-action-hover);
-  }
-}
-
 // filter action (turquoise)
 .buttonFilter {
   composes: button;

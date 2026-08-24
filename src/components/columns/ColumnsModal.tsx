@@ -19,7 +19,6 @@ export function ColumnsModal({
       className={styles.overlay}
       onClick={onClose}
       role="presentation"
-      data-testid="columns-overlay"
     >
       <div
         className={styles.modal}

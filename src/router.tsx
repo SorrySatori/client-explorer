@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
+import { PendingFallback } from './components/PendingFallback'
 
 // TanStack Start convention: called once per pageload to build the router
 export function getRouter() {
@@ -20,6 +21,8 @@ export function getRouter() {
     routeTree,
     context: { queryClient },
     defaultPreload: 'intent',
+    defaultPendingComponent: PendingFallback,
+    defaultPendingMs: 300,
     Wrap: ({ children }) => (
       <StrictMode>
         <QueryClientProvider client={queryClient}>
