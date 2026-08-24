@@ -10,9 +10,13 @@ function readStored(): string[] | null {
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return null
     // drop keys that no longer exist (stale storage after a code change)
-    return parsed.filter((key) =>
+    const valid = parsed.filter((key) =>
       ALL_COLUMNS.some((column) => column.key === key),
     )
+    // a saved selection where every key went stale means defaults,
+    // not an empty table
+    if (parsed.length > 0 && valid.length === 0) return null
+    return valid
   } catch {
     // unavailable storage (private mode) or corrupted JSON — use defaults
     return null

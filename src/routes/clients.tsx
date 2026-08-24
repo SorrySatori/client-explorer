@@ -127,10 +127,10 @@ export const Route = createFileRoute('/clients')({
       tags: nonEmpty(search.tags),
     }
   },
-  loaderDeps: ({ search }) => search,
+  loaderDeps: ({ search }) => listParams(search),
   loader: ({ context: { queryClient }, deps }) =>
     Promise.all([
-      queryClient.ensureQueryData(companyListQueryOptions(listParams(deps))),
+      queryClient.ensureQueryData(companyListQueryOptions(deps)),
       queryClient.ensureQueryData(companyCategoriesQueryOptions()),
     ]),
   component: ClientsPage,
@@ -161,7 +161,8 @@ function ClientsPage() {
   const { visibleKeys, toggleColumn, resetColumns } = useVisibleColumns()
   const [columnsOpen, setColumnsOpen] = useState(false)
   const navigate = useNavigate()
-  // number thanks to params.parse on the detail route; undefined = no selection
+  // number from the detail route's params.parse; undefined = no selection
+  // (an id that fails parsing stays a raw string and matches no row)
   const { clientId: selectedId } = useParams({ strict: false })
   // Dim the stale table while a slow search navigation is loading new data
   const isNavigating = useRouterState({ select: (state) => state.isLoading })

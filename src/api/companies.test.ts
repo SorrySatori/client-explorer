@@ -53,6 +53,13 @@ describe('buildCompanyListSearch', () => {
     expect(buildCompanyListSearch({ offset: 0 }).get('offset')).toBe('0')
   })
 
+  it('trims individual tags and drops empty ones', () => {
+    expect(buildCompanyListSearch({ tags: ' vip, praha ,' }).get('tags')).toBe(
+      'vip,praha',
+    )
+    expect(buildCompanyListSearch({ tags: ' , ' }).toString()).toBe('')
+  })
+
   it('defaults sortDirection to ASC when only sortColumn is given', () => {
     const search = buildCompanyListSearch({ sortColumn: 'name' })
     expect(search.get('sortDirection')).toBe('ASC')

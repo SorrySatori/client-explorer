@@ -1,24 +1,47 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import DOMPurify from 'dompurify'
 import {
   companyDetailQueryOptions,
   companyLogoQueryOptions,
 } from '../api/companies'
+import { ApiError } from '../api/http'
 import { CategoryChip } from '../components/CategoryChip'
 import { ClientState } from '../components/ClientState'
 import styles from '../styles/detail.module.scss'
 
 export const Route = createFileRoute('/clients/$clientId')({
   params: {
-    parse: (params) => ({ clientId: Number(params.clientId) }),
+    parse: (params) => {
+      const clientId = Number(params.clientId)
+      // reject /clients/foo up front instead of burning a rate-limited
+      // API request on company/NaN/
+      if (!Number.isInteger(clientId) || clientId <= 0) {
+        throw notFound()
+      }
+      return { clientId }
+    },
     stringify: (params) => ({ clientId: String(params.clientId) }),
   },
-  loader: ({ context: { queryClient }, params }) =>
-    queryClient.ensureQueryData(companyDetailQueryOptions(params.clientId)),
+  loader: async ({ context: { queryClient }, params }) => {
+    try {
+      return await queryClient.ensureQueryData(
+        companyDetailQueryOptions(params.clientId),
+      )
+    } catch (error) {
+      // a well-formed id the API doesn't know is a 404, not a failure
+      if (error instanceof ApiError && error.status === 404) throw notFound()
+      throw error
+    }
+  },
   errorComponent: DetailError,
+  notFoundComponent: DetailNotFound,
   component: ClientDetailPanel,
 })
+
+function DetailNotFound() {
+  return <div className={styles.placeholder}>Klient nenalezen.</div>
+}
 
 function ClientDetailPanel() {
   const { clientId } = Route.useParams()

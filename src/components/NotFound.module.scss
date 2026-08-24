@@ -1,0 +1,18 @@
+.notFound {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  padding: 64px 32px;
+  color: var(--color-text-muted);
+}
+
+.code {
+  margin: 0;
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--color-border);
+}
+
+.backLink {
+  text-decoration: none;
+}
