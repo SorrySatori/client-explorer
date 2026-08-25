@@ -5,9 +5,7 @@ import styles from './Sidebar.module.scss'
 export function Sidebar() {
   return (
     <nav className={styles.sidebar} aria-label="Hlavní navigace">
-      <div className={styles.logo} aria-hidden="true">
-        R
-      </div>
+      <img className={styles.logo} src="/logo.svg" alt="" />
 
       <span className={styles.iconActive} title="Adresář">
         <UsersIcon />
