@@ -1,8 +1,6 @@
 import { queryOptions } from '@tanstack/react-query'
 import { getJson, type DetailResponse, type ListResponse } from './http'
 
-// --- Enum values (as documented by the Raynet API) ---
-
 export const COMPANY_RATINGS = ['A', 'B', 'C'] as const
 export type CompanyRating = (typeof COMPANY_RATINGS)[number]
 

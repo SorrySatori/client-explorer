@@ -10,7 +10,7 @@
   font-size: 13px;
 
   th {
-    background: var(--color-bg);
+    background: var(--color-bg-canvas);
     color: var(--color-text-muted);
     font-size: 11px;
     font-weight: 600;
@@ -29,6 +29,7 @@
   }
 
   tbody tr {
+    background: var(--color-bg);
     cursor: pointer;
 
     &:last-child td {
@@ -36,7 +37,7 @@
     }
 
     &:hover {
-      background: var(--color-bg-muted);
+      background: var(--color-bg-canvas);
     }
   }
 }

@@ -24,12 +24,13 @@
   --color-border: #e3e8ee;
   --color-bg: #fff;
   --color-bg-muted: #f5f7f9;
+  --color-bg-canvas: #f2f4f6;
 
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 
   font: 14px/1.45 var(--font-sans);
   color: var(--color-text);
-  background: var(--color-bg);
+  background: var(--color-bg-canvas);
   color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
