@@ -19,14 +19,19 @@ cp .env.example .env   # fill in RAYNET_API_URL + RAYNET_BEARER_TOKEN
 pnpm dev               # TanStack Start dev server (app + /api proxy route)
 ```
 
+The app is instance-agnostic: **any Raynet instance's bearer token works**,
+only the data differs. See [ARCHITECTURE.md](ARCHITECTURE.md) → Data and API
+for how to generate a token for your instance.
+
 ## Scripts
 
-| Script            | Description                                |
-| ----------------- | ------------------------------------------ |
-| `pnpm dev`        | Vite dev server (incl. the `/api` handler) |
-| `pnpm build`      | Type-check (`tsc -b`) and production build |
-| `pnpm test`       | Run tests once (Vitest)                    |
-| `pnpm test:watch` | Run tests in watch mode                    |
-| `pnpm lint`       | ESLint                                     |
-| `pnpm format`     | Format everything with Prettier            |
-| `pnpm preview`    | Preview the production build               |
+| Script              | Description                                |
+| ------------------- | ------------------------------------------ |
+| `pnpm dev`          | Vite dev server (incl. the `/api` handler) |
+| `pnpm build`        | Type-check (`tsc -b`) and production build |
+| `pnpm test`         | Run tests once (Vitest)                    |
+| `pnpm test:watch`   | Run tests in watch mode                    |
+| `pnpm lint`         | ESLint                                     |
+| `pnpm format`       | Format everything with Prettier            |
+| `pnpm format:check` | Check formatting without writing           |
+| `pnpm preview`      | Preview the production build               |

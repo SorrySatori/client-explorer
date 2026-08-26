@@ -162,6 +162,11 @@ export type CompanySortColumn =
 
 export type SortDirection = 'ASC' | 'DESC'
 
+// Raynet's documented maximum page size; without an explicit limit the API
+// returns a smaller default page (size undocumented), silently truncating
+// larger instances
+export const MAX_PAGE_SIZE = 1000
+
 export interface CompanyListParams {
   fulltext?: string
   name?: string

@@ -19,8 +19,6 @@ export const Route = createFileRoute('/api/$')({
       PATCH: readOnly,
       DELETE: readOnly,
       GET: async ({ request }) => {
-        // Resolved inside the handler so no env access leaks into the
-        // client bundle (route files are shared code)
         const base = process.env.RAYNET_API_URL
         const token = process.env.RAYNET_BEARER_TOKEN
         if (!base || !token) {
@@ -40,7 +38,7 @@ export const Route = createFileRoute('/api/$')({
         const baseUrl = new URL(base.endsWith('/') ? base : `${base}/`)
         const upstream = new URL(path, baseUrl)
         upstream.search = url.search
-        
+
         if (
           upstream.origin !== baseUrl.origin ||
           !upstream.pathname.startsWith(baseUrl.pathname)
