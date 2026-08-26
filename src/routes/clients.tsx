@@ -25,8 +25,11 @@ import {
   ALL_COLUMNS,
   ColumnsModal,
   useVisibleColumns,
+  VisibleColumnsContext,
 } from '../components/columns'
 import { ActiveFilters, Filters } from '../components/filters'
+import { ListSummaryBar } from '../components/ListSummaryBar'
+import { usePagination } from '../components/usePagination'
 import { SearchBox, SEARCH_MIN_LENGTH } from '../components/SearchBox'
 import ui from '../styles/ui.module.scss'
 import styles from '../styles/clients.module.scss'
@@ -55,6 +58,7 @@ interface ClientsSearch {
   // client-side table sorting (column key from the columns config)
   sort?: string
   sortDir?: 'desc' | 'asc'
+  page?: number
 }
 
 const oneOf = <T extends string>(
@@ -98,7 +102,9 @@ export const Route = createFileRoute('/clients')({
     const sort = ALL_COLUMNS.some((column) => column.key === search.sort)
       ? (search.sort as string)
       : undefined
+    const page = intId(search.page)
     return {
+      page: page !== undefined && page >= 2 ? page : undefined,
       sort,
       sortDir: sort
         ? (oneOf(search.sortDir, ['desc', 'asc']) ?? 'desc')
@@ -180,6 +186,7 @@ function ClientsPage() {
   // On narrow screens the detail renders as a bottom sheet; the page gets
   // extra bottom room so the last rows can still scroll above the sheet
   const detailOpen = selectedId !== undefined
+  const pagination = usePagination(list.data.length)
 
   return (
     <div
@@ -213,20 +220,26 @@ function ClientsPage() {
       <div
         className={`${styles.content}${isNavigating ? ` ${styles.loading}` : ''}`}
       >
-        <ClientsTable
-          companies={list.data}
-          visibleColumnKeys={visibleKeys}
-          selectedId={selectedId}
-          onSelect={toggleSelectedClient}
-          onEditColumns={() => setColumnsOpen(true)}
-        />
+        <VisibleColumnsContext.Provider value={visibleKeys}>
+          <ClientsTable
+            companies={list.data}
+            page={pagination.page}
+            pageSize={pagination.pageSize}
+            visibleColumnKeys={visibleKeys}
+            selectedId={selectedId}
+            onSelect={toggleSelectedClient}
+            onEditColumns={() => setColumnsOpen(true)}
+          />
 
-        <aside
-          className={`${styles.detail}${detailOpen ? ` ${styles.detailOpen}` : ''}`}
-        >
-          <Outlet />
-        </aside>
+          <aside
+            className={`${styles.detail}${detailOpen ? ` ${styles.detailOpen}` : ''}`}
+          >
+            <Outlet />
+          </aside>
+        </VisibleColumnsContext.Provider>
       </div>
+
+      <ListSummaryBar totalCount={list.totalCount} {...pagination} />
     </div>
   )
 }

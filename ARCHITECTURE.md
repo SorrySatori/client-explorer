@@ -36,17 +36,19 @@ scope (the list API cannot express them).
 ## Where state lives
 
 - **URL search params** — _what data am I looking at_: fulltext, all filter
-  criteria, and table sorting (`sort`/`sortDir`), validated in
-  `validateSearch`. Shareable and deep-linkable; a copied link reproduces
-  the same result set in the same order. Sorting is applied client-side
+  criteria, table sorting (`sort`/`sortDir`), and the current page
+  (`page`, client-side pagination), validated in `validateSearch`.
+  Shareable and deep-linkable; a copied link reproduces the same result
+  set in the same order on the same page. Any navigation that changes the
+  result set (filter, search, sort) resets to page 1. Sorting is applied client-side
   over the loaded list (the API can only sort by a handful of fields, while
   the column `sortValue` accessors sort what the user actually sees), but
   it is still query state, not view state — the row order is part of what
   a shared link must reproduce.
 - **localStorage** — _personal view preferences_: the visible table columns
-  (`useVisibleColumns`). Deliberately not URL params (they would leak a
-  personal layout into every shared link) and not plain React state (it
-  would reset on every reload). Raynet stores its column setup server-side
+  (`useVisibleColumns`) and the page size (`usePagination`). Deliberately
+  not URL params (they would leak a personal layout into every shared
+  link) and not plain React state (it would reset on every reload). Raynet stores its column setup server-side
   per user; this app has no backend of its own, so localStorage is the
   closest equivalent.
 - **React state (`useState`)** — _ephemeral UI_: open panels and modals,
@@ -80,8 +82,10 @@ scope (the list API cannot express them).
   the list as a single page at the API maximum (`limit=1000`) — without an
   explicit limit Raynet returns only a small default page, silently
   truncating larger instances — and shows a notice when `totalCount`
-  exceeds the loaded rows; full pagination is a known limitation (see Next
-  steps). Responses use envelopes: list `{ success, totalCount, data }`,
+  exceeds the loaded rows. Pagination is client-side over the loaded list
+  (sort first, then slice, so ordering stays global across pages);
+  server-side fetching past the 1000-row cap is a known limitation (see
+  Next steps). Responses use envelopes: list `{ success, totalCount, data }`,
   detail `{ success, data }`. Shape: route URL search params → query key →
   proxy query params → Raynet.
 - **Rate limits**: 24 000 requests/day per instance and max 4 concurrent
@@ -149,7 +153,8 @@ Known limitations, in priority order:
    prefetches the detail).
 2. Native `<dialog>` for the columns modal — Escape handling and focus
    trapping for free; the current hand-rolled overlay has neither.
-3. Real pagination past the 1000-row API cap (currently: single max-size
-   page + a "showing first N of M" notice).
+3. Server-side fetching past the 1000-row API cap (currently: one
+   max-size request, client-side pagination over it, and a "showing
+   first N of M" notice).
 4. AA color contrast for the muted text token (`#8fa3ad` on white is
    ~2.6:1; WCAG AA wants 4.5:1 for small text).

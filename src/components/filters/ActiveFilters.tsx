@@ -36,6 +36,7 @@ export function ActiveFilters() {
               search: (prev: Record<string, unknown>) => ({
                 ...prev,
                 [key]: undefined,
+                page: undefined,
               }),
               replace: true,
             })

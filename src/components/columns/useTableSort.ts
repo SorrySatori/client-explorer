@@ -27,7 +27,11 @@ export function useTableSort() {
           : { sort: undefined, sortDir: undefined }
     navigate({
       to: '.',
-      search: (prev: Record<string, unknown>) => ({ ...prev, ...next }),
+      search: (prev: Record<string, unknown>) => ({
+        ...prev,
+        ...next,
+        page: undefined,
+      }),
       replace: true,
     })
   }

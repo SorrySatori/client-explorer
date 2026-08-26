@@ -34,7 +34,11 @@ export function SearchBox() {
       if (next !== q) {
         navigate({
           to: '.',
-          search: (prev: { q?: string }) => ({ ...prev, q: next }),
+          search: (prev: { q?: string }) => ({
+            ...prev,
+            q: next,
+            page: undefined,
+          }),
           replace: true,
         })
       }
