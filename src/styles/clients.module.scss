@@ -22,8 +22,10 @@
 }
 
 .content {
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
+  grid-auto-rows: 1fr;
   gap: 24px;
   align-items: start;
   margin-bottom: 12px;

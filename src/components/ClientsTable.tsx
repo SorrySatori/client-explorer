@@ -120,13 +120,6 @@ export function ClientsTable({
               <td />
             </tr>
           ))}
-          {rows.length === 0 && (
-            <tr>
-              <td colSpan={columns.length + 1} className={styles.empty}>
-                Žádní klienti nenalezeni.
-              </td>
-            </tr>
-          )}
         </tbody>
       </table>
     </div>
