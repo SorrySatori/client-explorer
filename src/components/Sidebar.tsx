@@ -1,7 +1,5 @@
 import styles from './Sidebar.module.scss'
 
-// Only the section that actually exists in this app — decorative icons for
-// features we don't have (calendar, documents, settings…) would be confusing
 export function Sidebar() {
   return (
     <nav className={styles.sidebar} aria-label="Hlavní navigace">
@@ -14,25 +12,19 @@ export function Sidebar() {
   )
 }
 
-const iconProps = {
-  width: 20,
-  height: 20,
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 2,
-  strokeLinecap: 'round',
-  strokeLinejoin: 'round',
-  'aria-hidden': true,
-} as const
-
 function UsersIcon() {
   return (
-    <svg {...iconProps}>
-      <circle cx="9" cy="8" r="3.5" />
-      <path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5" />
-      <circle cx="17.5" cy="9" r="2.5" />
-      <path d="M16.5 14.7c2.8.3 5 2 5 4.8" />
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M9 13c2.67 0 8 1.34 8 4v3H1v-3c0-2.66 5.33-4 8-4zm7.67.13c2.76.4 6.33 1.69 6.33 3.87v3h-4v-3c0-1.68-.96-2.94-2.33-3.87zM9 15c-2.7 0-5.8 1.29-6 2.01V18h12v-1c-.2-.71-3.3-2-6-2zm6-11c2.21 0 4 1.79 4 4s-1.79 4-4 4c-.47 0-.91-.1-1.33-.24a5.98 5.98 0 000-7.52C14.09 4.1 14.53 4 15 4zM9 4c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+      />
     </svg>
   )
 }
