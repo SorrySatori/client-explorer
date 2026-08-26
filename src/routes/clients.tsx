@@ -14,6 +14,7 @@ import {
   COMPANY_RATINGS,
   COMPANY_ROLES,
   COMPANY_STATES,
+  MAX_PAGE_SIZE,
   type CompanyListParams,
   type CompanyRating,
   type CompanyRole,
@@ -89,6 +90,7 @@ const listParams = (search: ClientsSearch): CompanyListParams => ({
   classification3: search.classification3,
   tags: search.tags,
   sortColumn: 'name',
+  limit: MAX_PAGE_SIZE,
 })
 
 export const Route = createFileRoute('/clients')({
@@ -195,6 +197,13 @@ function ClientsPage() {
       <SearchBox />
 
       <ActiveFilters />
+
+      {list.totalCount > list.data.length && (
+        <p className={styles.truncationNote}>
+          Zobrazeno prvních {list.data.length} klientů z {list.totalCount}.
+          Upřesněte vyhledávání nebo filtry.
+        </p>
+      )}
 
       <div
         className={`${styles.content}${isNavigating ? ` ${styles.loading}` : ''}`}

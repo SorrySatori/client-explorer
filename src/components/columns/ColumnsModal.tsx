@@ -15,11 +15,7 @@ export function ColumnsModal({
   onClose,
 }: ColumnsModalProps) {
   return (
-    <div
-      className={styles.overlay}
-      onClick={onClose}
-      role="presentation"
-    >
+    <div className={styles.overlay} onClick={onClose} role="presentation">
       <div
         className={styles.modal}
         role="dialog"

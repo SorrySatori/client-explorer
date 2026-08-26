@@ -23,15 +23,15 @@ scope (the list API cannot express them).
 
 ## Decisions
 
-| Area         | Choice                          | Notes                                                                                                                                                                       |
-| ------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework    | TanStack Start (Vite, SPA mode) | Unifies dev and prod: the `/api` proxy is a server route running identically in both. SSR is off (`ssr: false` on the root route) — an authenticated data app needs no SEO. |
-| Routing      | TanStack Router (file-based)    | Filters and full-text search live in the URL as search params (`validateSearch`), deep links work out of the box.                                                           |
-| Server state | TanStack Query                  | `queryClient` is in the router context → loaders call `ensureQueryData`, components use `useSuspenseQuery`.                                                                 |
-| Client state | `useState` (+ localStorage)     | The app is small, no need for Zustand/Context. Column visibility persists in localStorage — see "Where state lives".                                                        |
-| Styling      | SCSS Modules (`*.module.scss`)  | Global tokens in `src/index.scss`.                                                                                                                                          |
-| Testing      | Vitest + React Testing Library  | A few targeted tests, not blanket coverage. Setup in `src/setupTests.ts`.                                                                                                   |
-| Deploy       | Vercel                          | Nitro build adapter — one deployment serves the SPA shell and the `/api` server route.                                                                                      |
+| Area         | Choice                          | Notes                                                                                                                                                                         |
+| ------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework    | TanStack Start (Vite, SPA mode) | Unifies dev and prod: the `/api` proxy is a server route running identically in both. SSR is off (`ssr: false` on the root route) — an authenticated data app needs no SEO.   |
+| Routing      | TanStack Router (file-based)    | Filters and full-text search live in the URL as search params (`validateSearch`), deep links work out of the box.                                                             |
+| Server state | TanStack Query                  | `queryClient` is in the router context → loaders call `ensureQueryData`, components use `useSuspenseQuery`.                                                                   |
+| Client state | `useState` (+ localStorage)     | The app is small, no need for Zustand/Context. Column visibility persists in localStorage — see "Where state lives".                                                          |
+| Styling      | SCSS Modules (`*.module.scss`)  | Global tokens in `src/index.scss` as CSS custom properties; color values (canvas grey, brand palette, chip colors) taken from Raynet's own production CSS.                    |
+| Testing      | Vitest + React Testing Library  | Unit tests for the API query builder + component tests for the filter panel over a real in-memory router (assertions target URL search params). Setup in `src/setupTests.ts`. |
+| Deploy       | Vercel                          | Nitro build adapter — one deployment serves the SPA shell and the `/api` server route.                                                                                        |
 
 ## Where state lives
 
@@ -61,7 +61,11 @@ scope (the list API cannot express them).
   **read-only** proxy `/api/<path>` → `${RAYNET_API_URL}/<path>`: it attaches
   `Authorization: Bearer ${RAYNET_BEARER_TOKEN}` server-side and rejects
   non-GET methods with 405 (Raynet exposes writes on the same paths — the
-  token must not be abusable through the proxy). As a TanStack Start server
+  token must not be abusable through the proxy). It also validates that the
+  resolved upstream URL stays on the configured Raynet origin under the API
+  base path — a crafted splat (`/api/https://evil.example`, `/api/%2e%2e/…`)
+  would otherwise make the server send the token to an attacker-controlled
+  host. As a TanStack Start server
   route it runs natively in the dev server and in the production build —
   one implementation for both environments. The bearer token already carries
   the instance context, so no `X-Instance-*` headers are needed; it can be
@@ -70,18 +74,35 @@ scope (the list API cannot express them).
 - Env vars: `RAYNET_API_URL`, `RAYNET_BEARER_TOKEN` (see [.env.example](.env.example),
   set in the Vercel dashboard for production). They are intentionally not
   `VITE_*` — they must never leak into the client bundle.
-- **Filtering, search, and pagination are handled by the backend**:
-  `fulltext`, field filters (`rating`, `state`, `role`, …; operators like
-  `name[LIKE]=...`), `offset`/`limit` (max 1000), `sortColumn`/`sortDirection`.
-  Responses use envelopes: list `{ success, totalCount, data }`, detail
-  `{ success, data }`. Shape: route URL search params → query key → proxy
-  query params → Raynet.
+- **Filtering and search are handled by the backend**: `fulltext`, field
+  filters (`rating`, `state`, `role`, …; operators like `name[LIKE]=...`),
+  `offset`/`limit` (max 1000), `sortColumn`/`sortDirection`. The app loads
+  the list as a single page at the API maximum (`limit=1000`) — without an
+  explicit limit Raynet returns only a small default page, silently
+  truncating larger instances — and shows a notice when `totalCount`
+  exceeds the loaded rows; full pagination is a known limitation (see Next
+  steps). Responses use envelopes: list `{ success, totalCount, data }`,
+  detail `{ success, data }`. Shape: route URL search params → query key →
+  proxy query params → Raynet.
 - **Rate limits**: 24 000 requests/day per instance and max 4 concurrent
   connections per client → QueryClient uses `staleTime: 60s` and `retry: 1`.
 - FE layer: [src/api/http.ts](src/api/http.ts) (fetch wrapper + envelopes,
   `ApiError` with Raynet's `translatedMessage`) and
   [src/api/companies.ts](src/api/companies.ts) (types + `queryOptions`
   factories for the company list/detail).
+
+## Error, loading, and not-found states
+
+- A router-level `defaultPendingComponent` (spinner) covers the first SPA
+  load, when nothing is on screen yet; later navigations keep the stale
+  table visible and dim it instead.
+- Route `errorComponent`s cover failed loads; the list one offers a retry
+  via `router.invalidate()`.
+- 404s on both levels: a global `defaultNotFoundComponent` for unmatched
+  URLs, and on the detail route an invalid id throws `notFound()` already
+  in `params.parse` (no rate-limited API request is spent), while an API
+  404 for a well-formed id is translated to `notFound()` in the loader —
+  both render a not-found placeholder in the detail pane.
 
 ## Development
 
@@ -121,4 +142,14 @@ pnpm build         # tsc -b && vite build
 
 ## Next steps
 
-1. Final README polish before submission.
+Known limitations, in priority order:
+
+1. Keyboard-accessible row selection — render the name cell as a `<Link>`
+   (also activates the router's intent preloading, so hovering a row
+   prefetches the detail).
+2. Native `<dialog>` for the columns modal — Escape handling and focus
+   trapping for free; the current hand-rolled overlay has neither.
+3. Real pagination past the 1000-row API cap (currently: single max-size
+   page + a "showing first N of M" notice).
+4. AA color contrast for the muted text token (`#8fa3ad` on white is
+   ~2.6:1; WCAG AA wants 4.5:1 for small text).

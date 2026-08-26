@@ -56,7 +56,10 @@ describe('Filters', () => {
       screen.getByDisplayValue('+ Přidat podmínku'),
       'state',
     )
-    await user.selectOptions(screen.getByDisplayValue('— vyberte —'), 'B_ACTUAL')
+    await user.selectOptions(
+      screen.getByDisplayValue('— vyberte —'),
+      'B_ACTUAL',
+    )
 
     await waitFor(() =>
       expect(router.state.location.search).toMatchObject({
@@ -104,9 +107,7 @@ describe('Filters', () => {
     const { router, user } = setup('?state=B_ACTUAL&name=raynet&q=test')
     await openPanel(user)
 
-    await user.click(
-      screen.getByRole('button', { name: /^vyčistit filtr$/i }),
-    )
+    await user.click(screen.getByRole('button', { name: /^vyčistit filtr$/i }))
 
     await waitFor(() => {
       expect(router.state.location.search).not.toHaveProperty('state')

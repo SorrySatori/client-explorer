@@ -33,6 +33,14 @@
   min-width: 0;
 }
 
+.truncationNote {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: var(--color-bg-warning);
+  font-size: 13px;
+}
+
 .loading {
   opacity: 0.55;
   pointer-events: none;

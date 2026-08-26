@@ -16,9 +16,9 @@ const collator = new Intl.Collator('cs', {
   sensitivity: 'base',
 })
 
-// Sorts what the user sees (column sortValue accessors); the dataset is one
-// unpaginated list, so client-side sorting covers every column — the API
-// itself can only sort by a handful of fields
+// Sorts what the user sees (column sortValue accessors); the list is loaded
+// as a single page capped at MAX_PAGE_SIZE, so client-side sorting covers
+// every loaded row — the API itself can only sort by a handful of fields
 function sortCompanies(companies: Company[], sort: TableSort): Company[] {
   const column = ALL_COLUMNS.find((item) => item.key === sort.key)
   if (!column) return companies
