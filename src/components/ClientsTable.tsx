@@ -4,6 +4,8 @@ import styles from './ClientsTable.module.scss'
 
 interface ClientsTableProps {
   companies: Company[]
+  page: number
+  pageSize: number
   visibleColumnKeys: string[]
   selectedId?: number
   onSelect: (companyId: number) => void
@@ -40,6 +42,8 @@ function sortCompanies(companies: Company[], sort: TableSort): Company[] {
 
 export function ClientsTable({
   companies,
+  page,
+  pageSize,
   visibleColumnKeys,
   selectedId,
   onSelect,
@@ -52,6 +56,7 @@ export function ClientsTable({
     (column) => column.alwaysOn || visibleColumnKeys.includes(column.key),
   )
   const rows = sort ? sortCompanies(companies, sort) : companies
+  const pagedRows = rows.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <div className={styles.tableWrap}>
@@ -96,7 +101,7 @@ export function ClientsTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((company) => (
+          {pagedRows.map((company) => (
             <tr
               key={company.id}
               className={

@@ -10,6 +10,7 @@ export function useClearFilters() {
       search: (prev: Record<string, unknown>) => ({
         ...prev,
         ...Object.fromEntries(FILTER_KEYS.map((key) => [key, undefined])),
+        page: undefined,
       }),
       replace: true,
     })

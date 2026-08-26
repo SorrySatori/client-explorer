@@ -32,7 +32,11 @@ export function Filters() {
   const setFilter = (key: FilterKey, value: FilterValue) => {
     navigate({
       to: '.',
-      search: (prev: Record<string, unknown>) => ({ ...prev, [key]: value }),
+      search: (prev: Record<string, unknown>) => ({
+        ...prev,
+        [key]: value,
+        page: undefined,
+      }),
       replace: true,
     })
   }

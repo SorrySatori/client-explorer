@@ -1,3 +1,4 @@
+import { Fragment, useContext } from 'react'
 import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import DOMPurify from 'dompurify'
@@ -6,9 +7,25 @@ import {
   companyLogoQueryOptions,
 } from '../api/companies'
 import { ApiError } from '../api/http'
+import { ALL_COLUMNS, VisibleColumnsContext } from '../components/columns'
 import { CategoryChip } from '../components/CategoryChip'
 import { ClientState } from '../components/ClientState'
 import styles from '../styles/detail.module.scss'
+
+// column keys that have a dedicated slot in the card layout (name is
+// the heading, state/category the header chips, owner the footer line,
+// address fields the ADRESA block) — the generic field list skips them
+// so nothing renders twice
+const FIELDS_WITH_DEDICATED_SLOT = new Set([
+  'name',
+  'state',
+  'category',
+  'owner',
+  'street',
+  'city',
+  'zipCode',
+  'country',
+])
 
 export const Route = createFileRoute('/clients/$clientId')({
   params: {
@@ -47,6 +64,14 @@ function ClientDetailPanel() {
   const { clientId } = Route.useParams()
   const { data: client } = useSuspenseQuery(companyDetailQueryOptions(clientId))
   const address = client.primaryAddress?.address
+  // mirror the user's column selection: whatever is visible in the table
+  // shows as a field here (the column config provides label + rendering)
+  const visibleKeys = useContext(VisibleColumnsContext)
+  const detailFields = ALL_COLUMNS.filter(
+    (column) =>
+      visibleKeys.includes(column.key) &&
+      !FIELDS_WITH_DEDICATED_SLOT.has(column.key),
+  )
 
   return (
     <article className={styles.card}>
@@ -68,12 +93,12 @@ function ClientDetailPanel() {
       <div className={styles.meta}>
         {client.logo && <CompanyLogo fileId={client.logo.id} />}
         <dl className={styles.info}>
-          {client.regNumber && (
-            <>
-              <dt>IČ</dt>
-              <dd>{client.regNumber}</dd>
-            </>
-          )}
+          {detailFields.map((column) => (
+            <Fragment key={column.key}>
+              <dt>{column.label}</dt>
+              <dd>{column.render(client)}</dd>
+            </Fragment>
+          ))}
           {address && (
             <>
               <dt>Adresa</dt>
