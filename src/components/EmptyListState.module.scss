@@ -1,0 +1,37 @@
+.placeholder {
+  grid-column: 1 / -1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+
+  img {
+    height: 160px;
+    object-fit: contain;
+  }
+
+  p {
+    margin: 12px 0 16px;
+    text-align: center;
+    color: #737c90;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 30px;
+  }
+
+  button {
+    padding: 7px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: 600 13px/1.2 var(--font-sans);
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--color-text-muted);
+    }
+  }
+}

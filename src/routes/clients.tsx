@@ -28,6 +28,8 @@ import {
   VisibleColumnsContext,
 } from '../components/columns'
 import { ActiveFilters, Filters } from '../components/filters'
+import { FILTER_KEYS } from '../components/filters/filterConfig'
+import { EmptyListState } from '../components/EmptyListState'
 import { ListSummaryBar } from '../components/ListSummaryBar'
 import { usePagination } from '../components/usePagination'
 import { SearchBox, SEARCH_MIN_LENGTH } from '../components/SearchBox'
@@ -221,21 +223,32 @@ function ClientsPage() {
         className={`${styles.content}${isNavigating ? ` ${styles.loading}` : ''}`}
       >
         <VisibleColumnsContext.Provider value={visibleKeys}>
-          <ClientsTable
-            companies={list.data}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            visibleColumnKeys={visibleKeys}
-            selectedId={selectedId}
-            onSelect={toggleSelectedClient}
-            onEditColumns={() => setColumnsOpen(true)}
-          />
+          {list.data.length === 0 ? (
+            <EmptyListState
+              hasActiveCriteria={
+                search.q !== undefined ||
+                FILTER_KEYS.some((key) => search[key] !== undefined)
+              }
+            />
+          ) : (
+            <ClientsTable
+              companies={list.data}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              visibleColumnKeys={visibleKeys}
+              selectedId={selectedId}
+              onSelect={toggleSelectedClient}
+              onEditColumns={() => setColumnsOpen(true)}
+            />
+          )}
 
-          <aside
-            className={`${styles.detail}${detailOpen ? ` ${styles.detailOpen}` : ''}`}
-          >
-            <Outlet />
-          </aside>
+          {list.data.length > 0 && (
+            <aside
+              className={`${styles.detail}${detailOpen ? ` ${styles.detailOpen}` : ''}`}
+            >
+              <Outlet />
+            </aside>
+          )}
         </VisibleColumnsContext.Provider>
       </div>
 
