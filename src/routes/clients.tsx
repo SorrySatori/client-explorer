@@ -166,7 +166,6 @@ function ClientsPage() {
   // number from the detail route's params.parse; undefined = no selection
   // (an id that fails parsing stays a raw string and matches no row)
   const { clientId: selectedId } = useParams({ strict: false })
-  // Dim the stale table while a slow search navigation is loading new data
   const isNavigating = useRouterState({ select: (state) => state.isLoading })
 
   const toggleSelectedClient = (companyId: number) =>
@@ -178,8 +177,14 @@ function ClientsPage() {
           search: true,
         })
 
+  // On narrow screens the detail renders as a bottom sheet; the page gets
+  // extra bottom room so the last rows can still scroll above the sheet
+  const detailOpen = selectedId !== undefined
+
   return (
-    <div className={styles.page}>
+    <div
+      className={`${styles.page}${detailOpen ? ` ${styles.pageWithSheet}` : ''}`}
+    >
       <div className={styles.headerRow}>
         <h1 className={styles.title}>Klienti</h1>
         <Filters />
@@ -216,7 +221,9 @@ function ClientsPage() {
           onEditColumns={() => setColumnsOpen(true)}
         />
 
-        <aside className={styles.detail}>
+        <aside
+          className={`${styles.detail}${detailOpen ? ` ${styles.detailOpen}` : ''}`}
+        >
           <Outlet />
         </aside>
       </div>
