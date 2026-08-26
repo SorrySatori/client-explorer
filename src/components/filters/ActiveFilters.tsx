@@ -43,10 +43,11 @@ export function ActiveFilters() {
           title="Odebrat filtr"
         >
           {FILTER_LABELS[key]}:{' '}
-          <strong>
-            <FilterValueLabel filterKey={key} value={search[key]} />
-          </strong>
+          <FilterValueLabel filterKey={key} value={search[key]} />
           <span aria-hidden="true"> ✕</span>
+          <span className={styles.chipRemove} aria-hidden="true">
+            ✕ Odebrat
+          </span>
         </button>
       ))}
       <button
