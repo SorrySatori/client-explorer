@@ -33,6 +33,38 @@
   min-width: 0;
 }
 
+// Stacked layout: the detail becomes a bottom sheet — selecting a row
+// gives immediate feedback instead of rendering below a long list
+@media (max-width: 1100px) {
+  .detail {
+    display: none;
+  }
+
+  .detailOpen {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 15;
+    max-height: 70svh;
+    overflow-y: auto;
+    background: var(--color-bg);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -8px 28px rgba(0, 70, 85, 0.25);
+    padding-bottom: env(safe-area-inset-bottom);
+
+    > article {
+      border: none;
+      border-radius: 0;
+    }
+  }
+
+  .pageWithSheet {
+    padding-bottom: 70svh;
+  }
+}
+
 .truncationNote {
   margin: 0 0 12px;
   padding: 8px 12px;
