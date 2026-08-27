@@ -178,11 +178,12 @@ function ClientsPage() {
 
   const toggleSelectedClient = (companyId: number) =>
     companyId === selectedId
-      ? navigate({ to: '/clients', search: true })
+      ? navigate({ to: '/clients', search: true, resetScroll: false })
       : navigate({
           to: '/clients/$clientId',
           params: { clientId: companyId },
           search: true,
+          resetScroll: false,
         })
 
   // On narrow screens the detail renders as a bottom sheet; the page gets
