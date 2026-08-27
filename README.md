@@ -8,8 +8,13 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for tech decisions, data flow, and next s
 
 ## Prerequisites
 
-- Node 22+ (Node 24 LTS recommended; `nvm use` picks it up from [.nvmrc](.nvmrc))
-- pnpm
+- Node 22+ (Node 24 LTS recommended)
+- pnpm (`corepack enable` picks the right version from `packageManager`)
+
+pnpm is the canonical package manager: the committed lockfile
+(`pnpm-lock.yaml`) and the build-script allowlist
+(`pnpm-workspace.yaml`) belong to it. npm or yarn will likely work,
+but they resolve their own dependency versions and are untested.
 
 ## Getting started
 

@@ -2,7 +2,7 @@
 
 Master–detail view of clients from a Raynet CRM instance. Records are
 filterable/searchable through a single fulltext field. The scope is fixed
-(hiring-task assignment) — the architecture is intentionally minimal,
+(hiring-task assignment) - the architecture is intentionally minimal,
 no unnecessary layers.
 
 Assignment requirements:
@@ -13,7 +13,7 @@ Assignment requirements:
 - Source code access + online demo (or README with run instructions)
 
 Beyond the assignment, the app adds an advanced filter panel modeled after
-Raynet's own — every "Kritéria klientů" criterion the company list API can
+Raynet's own - every client criterion the company list API can
 filter server-side: name, natural person, state, role, rating, owner,
 economy activity, turnover, legal form, payment terms, city, e-mail,
 reg. number, tax number, category, classifications 1–3 and tags. All filters
@@ -23,15 +23,28 @@ scope (the list API cannot express them).
 
 ## Decisions
 
-| Area         | Choice                          | Notes                                                                                                                                                                         |
-| ------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework    | TanStack Start (Vite, SPA mode) | Unifies dev and prod: the `/api` proxy is a server route running identically in both. SSR is off (`ssr: false` on the root route) — an authenticated data app needs no SEO.   |
-| Routing      | TanStack Router (file-based)    | Filters and full-text search live in the URL as search params (`validateSearch`), deep links work out of the box.                                                             |
-| Server state | TanStack Query                  | `queryClient` is in the router context → loaders call `ensureQueryData`, components use `useSuspenseQuery`.                                                                   |
-| Client state | `useState` (+ localStorage)     | The app is small, no need for Zustand/Context. Column visibility persists in localStorage — see "Where state lives".                                                          |
-| Styling      | SCSS Modules (`*.module.scss`)  | Global tokens in `src/index.scss` as CSS custom properties; color values (canvas grey, brand palette, chip colors) taken from Raynet's own production CSS.                    |
-| Testing      | Vitest + React Testing Library  | Unit tests for the API query builder + component tests for the filter panel over a real in-memory router (assertions target URL search params). Setup in `src/setupTests.ts`. |
-| Deploy       | Vercel                          | Nitro build adapter — one deployment serves the SPA shell and the `/api` server route.                                                                                        |
+- **Framework: TanStack Start (Vite, SPA mode).** Unifies dev and prod:
+  the `/api` proxy is a server route running identically in both. SSR is
+  off (`ssr: false` on the root route) — an authenticated data app needs
+  no SEO.
+- **Routing: TanStack Router (file-based).** Filters and full-text search
+  live in the URL as search params (`validateSearch`), deep links work
+  out of the box.
+- **Server state: TanStack Query.** `queryClient` is in the router
+  context → loaders call `ensureQueryData`, components use
+  `useSuspenseQuery`.
+- **Client state: `useState` (+ localStorage).** The app is small, no
+  need for Zustand/Context. Column visibility persists in localStorage —
+  see "Where state lives".
+- **Styling: SCSS Modules (`*.module.scss`).** Global tokens in
+  `src/index.scss` as CSS custom properties; color values (canvas grey,
+  brand palette, chip colors) taken from Raynet's own production CSS.
+- **Testing: Vitest + React Testing Library.** Unit tests for the API
+  query builder + component tests for the filter panel over a real
+  in-memory router (assertions target URL search params). Setup in
+  `src/setupTests.ts`.
+- **Deploy: Vercel.** Nitro build adapter — one deployment serves the
+  SPA shell and the `/api` server route.
 
 ## Where state lives
 
@@ -48,9 +61,9 @@ scope (the list API cannot express them).
 - **localStorage** — _personal view preferences_: the visible table columns
   (`useVisibleColumns`) and the page size (`usePagination`). Deliberately
   not URL params (they would leak a personal layout into every shared
-  link) and not plain React state (it would reset on every reload). Raynet stores its column setup server-side
-  per user; this app has no backend of its own, so localStorage is the
-  closest equivalent.
+  link) and not plain React state (it would reset on every reload).
+  Raynet stores its column setup server-side per user; this app has no
+  backend of its own, so localStorage is the closest equivalent.
 - **React state (`useState`)** — _ephemeral UI_: open panels and modals,
   draft filter rows, input drafts before commit.
 - **TanStack Query cache** — all server data, keyed by query params.
@@ -111,7 +124,6 @@ scope (the list API cannot express them).
 ## Development
 
 ```bash
-nvm use            # Node 24 LTS (.nvmrc)
 pnpm dev           # app + /api server route (needs .env, see .env.example)
 pnpm test          # vitest
 pnpm lint
@@ -125,7 +137,8 @@ pnpm build         # tsc -b && vite build
 - Unit tests run without the Start/Nitro plugins (see the `mode === 'test'`
   branch in [vite.config.ts](vite.config.ts)) — they need only jsdom.
 
-- `src/routeTree.gen.ts` is generated by the TanStack Start plugin on Vite startup — do not edit; kept in git because `tsc -b` needs it.
+- `src/routeTree.gen.ts` is generated by the TanStack Start plugin on
+  Vite startup — do not edit; kept in git because `tsc -b` needs it.
 - The ESLint rule `react-refresh/only-export-components` is disabled for `src/routes/**`
   (route files export `Route` alongside components; HMR is handled by the router plugin).
 
@@ -146,15 +159,10 @@ pnpm build         # tsc -b && vite build
 
 ## Next steps
 
-Known limitations, in priority order:
-
-1. Keyboard-accessible row selection — render the name cell as a `<Link>`
-   (also activates the router's intent preloading, so hovering a row
-   prefetches the detail).
-2. Native `<dialog>` for the columns modal — Escape handling and focus
-   trapping for free; the current hand-rolled overlay has neither.
-3. Server-side fetching past the 1000-row API cap (currently: one
-   max-size request, client-side pagination over it, and a "showing
-   first N of M" notice).
-4. AA color contrast for the muted text token (`#8fa3ad` on white is
-   ~2.6:1; WCAG AA wants 4.5:1 for small text).
+Known limitation: server-side fetching past the 1000-row API cap
+(currently: one max-size request, client-side pagination over it, and a
+"showing first N of M" notice). Fetching all pages would keep the
+client-side any-column sorting but calls for row virtualization at that
+scale; server-side pagination would restrict sorting to the handful of
+API-sortable columns and multiply requests against the rate limit.
+Deliberately out of scope for the assignment's data sizes.

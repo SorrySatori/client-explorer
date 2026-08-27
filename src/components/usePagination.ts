@@ -14,7 +14,9 @@ const readStoredSize = (): number => {
     return (PAGE_SIZES as readonly number[]).includes(parsed)
       ? parsed
       : DEFAULT_PAGE_SIZE
-  } catch {
+  } catch (error) {
+    // unavailable storage (private mode) — fall back for this session
+    console.warn('Could not read the stored page size:', error)
     return DEFAULT_PAGE_SIZE
   }
 }
@@ -44,7 +46,8 @@ export function usePagination(totalRows: number) {
     setPageSizeState(next)
     try {
       localStorage.setItem(STORAGE_KEY, String(next))
-    } catch {
+    } catch (error) {
+      console.warn('Could not persist the page size:', error)
     }
     setPage(1)
   }

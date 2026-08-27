@@ -64,6 +64,15 @@
       border: none;
       border-radius: 0;
     }
+
+    > article > header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      margin: -20px -20px 0;
+      padding: 16px 20px 10px;
+      background: var(--color-bg);
+    }
   }
 
   .pageWithSheet {

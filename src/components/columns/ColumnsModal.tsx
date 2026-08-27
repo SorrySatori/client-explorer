@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { COLUMN_GROUPS } from './columnConfig'
 import styles from './ColumnsModal.module.scss'
 
@@ -14,15 +15,25 @@ export function ColumnsModal({
   onReset,
   onClose,
 }: ColumnsModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    // guard: StrictMode runs effects twice and showModal throws on an
+    // already-open dialog
+    if (!dialogRef.current?.open) dialogRef.current?.showModal()
+  }, [])
+
   return (
-    <div className={styles.overlay} onClick={onClose} role="presentation">
-      <div
-        className={styles.modal}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Výběr sloupců"
-        onClick={(event) => event.stopPropagation()}
-      >
+    <dialog
+      ref={dialogRef}
+      className={styles.modal}
+      aria-label="Výběr sloupců"
+      onClose={onClose}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+    >
+      <div className={styles.body}>
         <button
           type="button"
           className={styles.close}
@@ -61,6 +72,6 @@ export function ColumnsModal({
           </button>
         </footer>
       </div>
-    </div>
+    </dialog>
   )
 }
