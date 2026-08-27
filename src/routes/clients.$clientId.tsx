@@ -81,6 +81,7 @@ function ClientDetailPanel() {
         <Link
           to="/clients"
           search={true}
+          resetScroll={false}
           className={styles.close}
           aria-label="Zavřít detail"
         >
