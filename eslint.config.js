@@ -20,9 +20,6 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
-    rules: {
-      'no-empty': ['error', { allowEmptyCatch: true }],
-    },
   },
   {
     files: ['src/routes/**/*.tsx'],

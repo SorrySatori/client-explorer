@@ -17,8 +17,9 @@ function readStored(): string[] | null {
     // not an empty table
     if (parsed.length > 0 && valid.length === 0) return null
     return valid
-  } catch {
+  } catch (error) {
     // unavailable storage (private mode) or corrupted JSON — use defaults
+    console.warn('Could not read the stored column selection:', error)
     return null
   }
 }
@@ -32,8 +33,9 @@ export function useVisibleColumns() {
     setVisibleKeys(keys)
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(keys))
-    } catch {
+    } catch (error) {
       // storage full or unavailable — the selection still works in-memory
+      console.warn('Could not persist the column selection:', error)
     }
   }
 

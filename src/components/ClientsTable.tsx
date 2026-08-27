@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import type { Company } from '../api/companies'
 import { ALL_COLUMNS, useTableSort, type TableSort } from './columns'
 import styles from './ClientsTable.module.scss'
@@ -114,7 +115,20 @@ export function ClientsTable({
                   key={column.key}
                   className={column.key === 'name' ? styles.name : undefined}
                 >
-                  {column.render(company)}
+                  {column.key === 'name' ? (
+                    <Link
+                      to="/clients/$clientId"
+                      params={{ clientId: company.id }}
+                      search={true}
+                      resetScroll={false}
+                      className={styles.nameLink}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      {column.render(company)}
+                    </Link>
+                  ) : (
+                    column.render(company)
+                  )}
                 </td>
               ))}
               <td />
